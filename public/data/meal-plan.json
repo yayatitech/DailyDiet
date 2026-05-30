@@ -1,0 +1,2048 @@
+{
+  "timeSlots": [
+    {
+      "id": 1,
+      "label": "Meal 1",
+      "time": "6:30 AM"
+    },
+    {
+      "id": 2,
+      "label": "Meal 2",
+      "time": "8:00 AM"
+    },
+    {
+      "id": 3,
+      "label": "Meal 3",
+      "time": "10:00 AM"
+    },
+    {
+      "id": 4,
+      "label": "Meal 4",
+      "time": "1:00 PM"
+    },
+    {
+      "id": 5,
+      "label": "Meal 5",
+      "time": "3:00 PM"
+    },
+    {
+      "id": 6,
+      "label": "Meal 6",
+      "time": "6:00 PM"
+    },
+    {
+      "id": 7,
+      "label": "Meal 7",
+      "time": "8:00 PM"
+    },
+    {
+      "id": 8,
+      "label": "Meal 8",
+      "time": "10:00 PM"
+    }
+  ],
+  "weeks": [
+    {
+      "id": "week-1",
+      "title": "Week 1 starting: May 4, 2026",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "Besan Cheela\nMint Chatni",
+          "Coconut water\nGreen Tea",
+          "Ragi Roti & Aloo Matar Sabji dry\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "Grilled Paneer\nSauted Veggies",
+          "SAunf Water"
+        ],
+        "thursday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "Potato Salad",
+          "Coconut water\nGreen Tea",
+          "Ragi Roti & Aloo Matar Sabji dry\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "Pamkin Soup",
+          "SAunf Water"
+        ],
+        "friday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "Banana Milk shake",
+          "Coconut water\nGreen Tea",
+          "Ragi Roti & Aloo Matar Sabji dry\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "Nutri Salad",
+          "SAunf Water"
+        ],
+        "saturday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "sprout salad",
+          "Coconut water\nGreen Tea",
+          "Ragi Roti & Ghiya Veg Sabji\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "Any dal without tadka and bowl of green vegietables",
+          "SAunf Water"
+        ],
+        "sunday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "Apple shake OR broken wheat porridge",
+          "Coconut water\nGreen Tea",
+          "Ragi Roti & Aloo Matar Sabji dry\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "Nutri Salad",
+          "SAunf Water"
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-2",
+      "title": "Week 2 starting: May 11, 2026",
+      "meals": {
+        "monday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "Paneer Burji",
+          "Coconut water\nGreen Tea",
+          "Ragi Roti & Aloo Matar Sabji dry\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "1 RAgi Roti, any veg",
+          "SAunf Water"
+        ],
+        "tuesday": [
+          "Weight loss Jira Water\nSoaked Almonds",
+          "Paneer Burji",
+          "Fruit (no banana, mango)\nGreen Tea",
+          "Ragi Roti & Aloo Matar Sabji dry\nRagi cheela OR Ragi dosa or Ragi Malt",
+          "Mint Lemmon Tea\nNuts Mixture",
+          "Roasted Makhana / Murmura\n1 small bowl with Salad",
+          "Weight loss tikka chat",
+          "SAunf Water"
+        ],
+        "wednesday": [
+          "Detox Kawa tea, soaked almonds. 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Black channa Chaat or omlete",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) or coconut water",
+          "Wheat roti and Kala Chana curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "1 Ragi Roti\nAny Veg",
+          "Chamolmile Tea"
+        ],
+        "thursday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Poha",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Ragi Stuffed Roti( except aloo, paneer) with curd\nAny Veg ( W/O Aloo, Arbi, Paneer, Soy)",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Any Dal without Tadka\nMixed veg Raita",
+          "Chamolmile Tea"
+        ],
+        "friday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Besan Cheela ,Mint Chutney\nOr egg white Omelette\nOr 2 boiled eggs",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Rice\nLow-cal Fish Curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Fish with sauteed veggies\nor grilled fish",
+          "Chamolmile Tea"
+        ],
+        "saturday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Moong Sprouts",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Jowar Roti\nWhite Chana Curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Grilled Paneer\nRaita",
+          "Chamolmile Tea"
+        ],
+        "sunday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Papaya Shake",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Jowar Roti\nPumpkin Sabzi Dry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Vermicelli Kheer\nOr Apple Shake\nor Summer Mix Fruit Bowl",
+          "Chamolmile Tea"
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-3",
+      "title": "Week 2 starting: May 18, 2026",
+      "meals": {
+        "monday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Moong Dal Dosa\nMint Chutney",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Ragi Roti\nAny Veg ( W/O Aloo, Arbi, Paneer, Soy)",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "1 bowl Vegetable Pulao",
+          "Chamolmile Tea"
+        ],
+        "tuesday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Besan Cheela \nCorriandar Chutney",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Wheat Roti\nMix Veg Sabzi",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Weight loss tikki Chaat",
+          "Chamolmile Tea"
+        ],
+        "wednesday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Poha",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Dal-rice\nAny veg",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Bowl of Dal\nAdd saute veggies (capsicum, tomato, onion, cabbage",
+          "Chamolmile Tea"
+        ],
+        "thursday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Pumpkin stuffed paratha\nMint Chutney",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Roti\nAny Veg ( W/O Aloo, Arbi, Paneer, Soy)",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Nutri Salad",
+          "Chamolmile Tea"
+        ],
+        "friday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Chana Chaat",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Oats Roti\nWhite Chana Curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Sprout Salad",
+          "Chamolmile Tea"
+        ],
+        "saturday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Vermicelli",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Roti\nWhite Chana Curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nor roasted chana \n1 small bowl salad",
+          "Besan Cheela\nAdd lots of veggies on top and in batter; mint chutney",
+          "Chamolmile Tea"
+        ],
+        "sunday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Apple Curd Smoothie",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Matar Pulao",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana",
+          "Mango Milkshake",
+          "Chamolmile Tea"
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-4",
+      "title": "Week 4 starting: May 25, 2026",
+      "meals": {
+        "monday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Sooji Upma",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Suji Vegetable Roll",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nOr Roasted Chana",
+          "Paneer Salad",
+          "Chamolmile Tea"
+        ],
+        "tuesday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Oats Dosa\nMint Chutney",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Namkeen Oats Dalliya / Masala Oats",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nOr Roasted Chana",
+          "Moong Dal Soup",
+          "Chamolmile Tea"
+        ],
+        "wednesday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Sooji Upma",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Any Sabji\nWheat Bran Roti",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nOr Roasted Chana",
+          "1 Bowl Veg Daliya",
+          "Chamolmile Tea"
+        ],
+        "thursday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Moong Dal Dosa",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Moong Dal Chilla\nMint Chutney",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana \nOr Roasted Chana",
+          "1 Bowl Veg Pulao",
+          "Chamolmile Tea"
+        ],
+        "friday": [
+          "Detox Kawa tea\n soaked almonds\n 8.30 - Veg juice - ghiya, beatroot, alovera and amla",
+          "Omlette",
+          "Any Fruit (except Mango, banana, Chikoo, Grapes) \n or coconut water",
+          "Ragi Roti\nEgg Curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana",
+          "Ragi Palak Tikki\nCorriander Chutney",
+          "Chamolmile Tea"
+        ],
+        "saturday": [
+          "Detox Kawa tea\n 3 soaked Walnuts",
+          "Paneer Patty/Puff\nMint Chutney",
+          "Any 1 seasonal Fruit (no banana, chikoo,grapes, mango)",
+          "Wheat Bran Roti\nPaneer And Vegetable Sabzi",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Buttermilk/Lassi",
+          "Nourisher Soup",
+          "hibiscus rose tea (no caffeine)\nor Chamolmile Tea (no caffeine)"
+        ],
+        "sunday": [
+          "Detox Kawa tea\n 3 soaked Walnuts",
+          "Poached Eggs on toast",
+          "Any 1 seasonal Fruit (no banana, chikoo,grapes, mango)",
+          "Jowar Roti\nMatkichi Rassa Bhaji\nor moong curry",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana",
+          "Bengali Fish Fry Recipe",
+          "hibiscus rose tea (no caffeine)\nor Chamolmile Tea (no caffeine)"
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-5",
+      "title": "Week 5 starting: June 1, 2026",
+      "meals": {
+        "monday": [
+          "Detox Kawa tea\n 3 soaked Walnuts",
+          "Pumkin Aloo Tikki\nCoriander Chutney",
+          "Any 1 seasonal Fruit (no banana, chikoo,grapes, mango)",
+          "Palak Dal Khichidi\nCucumber Raita",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana",
+          "Turai Rice Soup\nor Minestrone soup",
+          "hibiscus rose tea (no caffeine)\nor Chamolmile Tea (no caffeine)"
+        ],
+        "tuesday": [
+          "Detox Kawa tea\n 3 soaked Walnuts",
+          "Ragi Malt",
+          "Any 1 seasonal Fruit (no banana, chikoo,grapes, mango)",
+          "Ragi Stuffed Roti (Except Aloo, Paneer)\nWith curd",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Buttermilk/Lassi",
+          "Kesar Kheer",
+          "hibiscus rose tea (no caffeine)\nor Chamolmile Tea (no caffeine)"
+        ],
+        "wednesday": [
+          "Detox Kawa tea\n 3 soaked Walnuts",
+          "Idli/dosa\nMint chutney",
+          "Any 1 seasonal Fruit (no banana, chikoo,grapes, mango)",
+          "Rice \nChicken Curry\nor Mixed Dal (Moong Masur Dal)",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Roasted Makhana",
+          "Roasted Chicken\nor Grilled Fish Salad",
+          "hibiscus rose tea (no caffeine)\nor Chamolmile Tea (no caffeine)"
+        ],
+        "thursday": [
+          "Detox Kawa tea\n 3 soaked Walnuts",
+          "Ragi Dosa\nOr Ragi Cheela\nCorriander Chutney",
+          "Any 1 seasonal Fruit (no banana, chikoo,grapes, mango)",
+          "Ragi Roti\nAny Veg ( W/O Aloo, Arbi, Paneer, Soy)",
+          "Antioxidant rich blue pea tea (caffeine free)  and 1Tbsp mix seeds",
+          "Buttermilk/Lassi",
+          "1 Portion of Anything you like\nNo sweet/fried/maida",
+          "hibiscus rose tea (no caffeine)\nor Chamolmile Tea (no caffeine)"
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-6",
+      "title": "Week 6 starting: June 8, 2026",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-7",
+      "title": "Week 7 starting: June 15, 2026",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-8",
+      "title": "Week 8 starting: June 22, 2026",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-9",
+      "title": "Week 9 starting: June 29, 2026",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-10",
+      "title": "Week 10 starting: July 6, 2026",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-11",
+      "title": "Week 11 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-12",
+      "title": "Week 12 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-13",
+      "title": "Week 13 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-14",
+      "title": "Week 14 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-15",
+      "title": "Week 15 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-16",
+      "title": "Week 16 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-17",
+      "title": "Week 17 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-18",
+      "title": "Week 18 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-19",
+      "title": "Week 19 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-20",
+      "title": "Week 20 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-21",
+      "title": "Week 21 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-22",
+      "title": "Week 22 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-23",
+      "title": "Week 23 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-24",
+      "title": "Week 24 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-25",
+      "title": "Week 25 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    },
+    {
+      "id": "week-26",
+      "title": "Week 26 starting:",
+      "meals": {
+        "monday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "tuesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "wednesday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "thursday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "friday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "saturday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "sunday": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "notes": ""
+    }
+  ]
+}
