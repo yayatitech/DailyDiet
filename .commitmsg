@@ -1,3 +1,0 @@
-Expand README with full architecture and agent handoff documentation.
-
-Documents data model, persistence, import pipeline, and maintenance checklist so future agents can develop against the project consistently.

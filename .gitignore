@@ -1,4 +1,14 @@
 node_modules/
 dist/
+.vite/
 .DS_Store
 *.log
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/.env
+apps/web/node_modules/
+apps/web/dist/
+apps/mobile/node_modules/
+.expo/

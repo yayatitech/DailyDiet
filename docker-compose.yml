@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dailydiet-db
+    environment:
+      POSTGRES_USER: dailydiet
+      POSTGRES_PASSWORD: dailydiet
+      POSTGRES_DB: dailydiet
+    ports:
+      - "5432:5432"
+    volumes:
+      - dailydiet_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dailydiet"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: dailydiet-api
+    environment:
+      DATABASE_URL: postgresql://dailydiet:dailydiet@postgres:5432/dailydiet
+      JWT_SECRET: dev-change-me
+      ADMIN_API_KEY: dev-admin-key
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8081
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  dailydiet_pg:

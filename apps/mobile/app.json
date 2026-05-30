@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "DailyDiet",
+    "slug": "dailydiet",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#2d6a4f" } }
+  }
+}
