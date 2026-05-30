@@ -27,6 +27,7 @@ flowchart TB
   web -->|REST JSON| api
   mobile -->|REST JSON| api
   xlsm --> import_py -->|meal-plan.json| seed
+  catalog_json["recipe-catalog.json"] --> seed
   seed --> pg
   api --> pg
 ```
@@ -58,6 +59,7 @@ DailyDiet/
 │   └── ARCHITECTURE.md
 ├── scripts/import_xlsm.py
 ├── public/data/meal-plan.json
+├── public/data/recipe-catalog.json
 ├── docker-compose.yml
 └── README.md
 ```
@@ -129,9 +131,15 @@ erDiagram
     int slot_index
     datetime completed_at
   }
+  RecipeCatalogEntry {
+    int id PK
+    string name
+    string name_key UK
+    string recipe_url
+  }
 ```
 
-**Merge rule:** API returns `template_meal.content` unless a `UserMealOverride` exists for that user/cell.
+**Merge rule:** API returns `template_meal.content` unless a `UserMealOverride` exists for that user/cell. Slot text is split on newlines into **meal items**; each item is enriched with a `recipe_url` from `recipe_catalog` when the normalized name matches.
 
 ---
 
@@ -143,7 +151,7 @@ erDiagram
 | GET | `/docs` | — | OpenAPI UI |
 | GET | `/v1/time-slots` | optional | 8 slots |
 | GET | `/v1/weeks` | optional | Week list |
-| GET | `/v1/weeks/{week_key}` | optional | Week + merged meals |
+| GET | `/v1/weeks/{week_key}` | optional | Week + merged meals (items enriched with recipe URLs) |
 | PATCH | `/v1/weeks/{week_key}/meals` | user | Upsert meal override |
 | PATCH | `/v1/weeks/{week_key}/notes` | user | Upsert notes |
 | POST | `/v1/weeks/{week_key}/reset` | user | Clear overrides for week |
@@ -157,6 +165,10 @@ erDiagram
 | POST | `/v1/auth/login` | — | Phase 2 |
 | POST | `/v1/auth/refresh` | refresh | Phase 2 |
 | GET | `/v1/me` | user | Phase 2 |
+| GET | `/v1/recipes` | — | List recipe catalog |
+| POST | `/v1/admin/recipes` | admin key | Create catalog entry |
+| PATCH | `/v1/admin/recipes/{id}` | admin key | Update catalog entry |
+| DELETE | `/v1/admin/recipes/{id}` | admin key | Delete catalog entry |
 
 Phase 1 without login: uses a **default dev user** when `Authorization` header absent (local dev only).
 

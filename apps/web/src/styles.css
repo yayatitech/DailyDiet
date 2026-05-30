@@ -70,6 +70,45 @@ body {
 .track-cb { margin-top: 0.35rem; flex-shrink: 0; accent-color: var(--accent); }
 .meal-input { width: 100%; min-width: 6rem; border: 1px solid transparent; border-radius: 4px; padding: 0.25rem; font: inherit; resize: vertical; background: transparent; }
 .meal-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); background: #fff; }
+.meal-items { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.meal-item-row { display: flex; align-items: center; gap: 0.25rem; }
+.meal-item-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.2rem 0.35rem;
+  font: inherit;
+  background: transparent;
+}
+.meal-item-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); background: #fff; }
+.recipe-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  flex-shrink: 0;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 4px;
+}
+.recipe-link:hover { background: var(--accent-soft); }
+.recipe-link-placeholder { display: inline-block; min-width: 2rem; flex-shrink: 0; }
+.meal-item-remove, .meal-item-add {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  padding: 0.15rem 0.4rem;
+  flex-shrink: 0;
+}
+.meal-item-add { align-self: flex-start; margin-top: 0.15rem; font-size: 0.75rem; }
+.meal-item-remove { min-width: 1.75rem; min-height: 1.75rem; }
 .meal-cell.cell-done, .day-slot.cell-done { background: var(--done); }
 .notes-section { margin-top: 1.25rem; }
 .notes-section label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem; }

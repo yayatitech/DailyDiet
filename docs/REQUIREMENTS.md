@@ -37,6 +37,8 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 | **User override** | User-specific meal text or notes differing from template |
 | **Completion** | Checkbox state: user marked a meal as done |
 | **Week key** | Stable id e.g. `week-1` matching import order |
+| **Meal item** | One named food within a time slot (e.g. "Mint Chutney") |
+| **Recipe catalog** | Global map of meal name → recipe URL, shared across all weeks/users |
 
 ---
 
@@ -75,6 +77,17 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 | **FR-17** | Native mobile app (Expo) lists weeks and day meals | Must |
 | **FR-18** | Mobile syncs completions and edits via same API | Must |
 
+### 2.4 Meal items & recipes
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| **FR-19** | Split slot text into distinct **meal items** (newline-delimited); display each on its own row in week grid and day view | Must |
+| **FR-20** | Show a **recipe link icon** next to a meal item when the catalog has a URL for that name; icon opens URL in new tab | Must |
+| **FR-21** | Maintain a **global recipe catalog** (meal name → URL); lookup is case-insensitive, whitespace-normalized | Must |
+| **FR-22** | Admin can **CRUD catalog entries** via API; seed from JSON on deploy/import | Must |
+| **FR-23** | Slot **completion checkbox** remains at slot level (all items in cell share done state) | Must |
+| **FR-24** | User can still **edit slot content**; edits persist as newline-joined text (backward compatible with existing overrides) | Must |
+
 ---
 
 ## 3. Non-functional requirements
@@ -97,6 +110,7 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 | **NFR-14** | Cost | Local dev | Docker Postgres |
 | **NFR-15** | Accessibility | Grid keyboard + checkbox labels | WCAG 2.1 AA (goal) |
 | **NFR-16** | i18n | UI language v2.0 | English only |
+| **NFR-17** | Accessibility | Recipe links | Open with `rel="noopener noreferrer"`; icon has `aria-label="Recipe for …"` |
 
 ---
 
@@ -134,3 +148,4 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 | Date | Version | Change |
 |------|---------|--------|
 | 2026-05-30 | 2.0 | Initial v2 requirements; Python stack |
+| 2026-05-30 | 2.1 | Meal items per slot + recipe catalog (FR-19–24) |

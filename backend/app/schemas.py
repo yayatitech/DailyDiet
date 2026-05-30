@@ -21,6 +21,11 @@ class TimeSlotOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class MealItemOut(BaseModel):
+    text: str
+    recipe_url: str | None = None
+
+
 class WeekSummary(BaseModel):
     id: str
     title: str
@@ -32,7 +37,7 @@ class WeekDetail(BaseModel):
     title: str
     start_date: date | None = None
     notes: str
-    meals: dict[str, list[str]]
+    meals: dict[str, list[list[MealItemOut]]]
 
 
 class MealPatch(BaseModel):
@@ -88,3 +93,21 @@ class TokenOut(BaseModel):
 
 class RefreshIn(BaseModel):
     refresh_token: str
+
+
+class RecipeOut(BaseModel):
+    id: int
+    name: str
+    recipe_url: str
+
+    model_config = {"from_attributes": True}
+
+
+class RecipeCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    recipe_url: str = Field(min_length=1, max_length=2048)
+
+
+class RecipeUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    recipe_url: str | None = Field(default=None, min_length=1, max_length=2048)

@@ -7,12 +7,14 @@ import {
   DAY_LABELS,
   DayKey,
   getToken,
+  MealItem,
   setTokens,
   TimeSlot,
   todayDayKey,
   WeekDetail,
   WeekSummary,
 } from "./api";
+import MealSlotEditor, { itemsToContent } from "./MealSlotEditor";
 
 type ViewMode = "week" | "day";
 
@@ -66,9 +68,16 @@ export default function App() {
     }
   };
 
-  const debouncedMeal = (d: DayKey, slot: number, content: string) => {
+  const debouncedMeal = (d: DayKey, slot: number, items: MealItem[]) => {
     if (!week) return;
-    setWeek({ ...week, meals: { ...week.meals, [d]: week.meals[d].map((m, i) => (i === slot ? content : m)) } });
+    setWeek({
+      ...week,
+      meals: {
+        ...week.meals,
+        [d]: week.meals[d].map((m, i) => (i === slot ? items : m)),
+      },
+    });
+    const content = itemsToContent(items);
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       api.patchMeal(weekId, d, slot, content).catch((e) => setError(String(e)));
@@ -199,7 +208,10 @@ export default function App() {
                           <td key={d} className={`meal-cell${today === d ? " col-today" : ""}${checked ? " cell-done" : ""}`}>
                             <label className="cell-label">
                               <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => toggleDone(d, slot, e.target.checked)} />
-                              <textarea className="meal-input" rows={3} value={week.meals[d][slot] ?? ""} onChange={(e) => debouncedMeal(d, slot, e.target.value)} />
+                              <MealSlotEditor
+                                items={week.meals[d][slot] ?? []}
+                                onChange={(items) => debouncedMeal(d, slot, items)}
+                              />
                             </label>
                           </td>
                         );
@@ -222,7 +234,10 @@ export default function App() {
                     </header>
                     <label className="cell-label">
                       <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => toggleDone(day, slot, e.target.checked)} />
-                      <textarea className="meal-input" rows={3} value={week.meals[day][slot] ?? ""} onChange={(e) => debouncedMeal(day, slot, e.target.value)} />
+                      <MealSlotEditor
+                        items={week.meals[day][slot] ?? []}
+                        onChange={(items) => debouncedMeal(day, slot, items)}
+                      />
                     </label>
                   </article>
                 );

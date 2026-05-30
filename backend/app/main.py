@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import admin, auth, health, weeks
+from app.routers import admin, auth, health, recipes, weeks
 
 app = FastAPI(title="DailyDiet API", version="2.0.0")
 
@@ -17,4 +17,5 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(weeks.router)
+app.include_router(recipes.router)
 app.include_router(admin.router)

@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session
 from app.auth import user_id_from_token
 from app.config import settings
 from app.database import get_db
-from app.models import DAY_KEYS, MealCompletion, TemplateMeal, TemplateWeek, User, UserMealOverride, UserWeekNotes
-from app.schemas import WeekDetail
+from app.meals import enrich_items, join_slot_content
+from app.models import DAY_KEYS, MealCompletion, RecipeCatalogEntry, TemplateWeek, User, UserMealOverride, UserWeekNotes
+from app.schemas import MealItemOut, WeekDetail
 
 security = HTTPBearer(auto_error=False)
 
@@ -79,7 +80,13 @@ def get_week_by_key(db: Session, week_key: str) -> TemplateWeek:
     return week
 
 
+def get_recipe_catalog_map(db: Session) -> dict[str, str]:
+    rows = db.query(RecipeCatalogEntry.name_key, RecipeCatalogEntry.recipe_url).all()
+    return {name_key: url for name_key, url in rows}
+
+
 def build_week_detail(db: Session, week: TemplateWeek, user: User) -> WeekDetail:
+    catalog = get_recipe_catalog_map(db)
     template_meals = {
         (m.day_of_week, m.slot_index): m.content for m in week.meals
     }
@@ -96,12 +103,12 @@ def build_week_detail(db: Session, week: TemplateWeek, user: User) -> WeekDetail
     )
     notes = notes_row.notes if notes_row else week.notes
 
-    meals: dict[str, list[str]] = {}
+    meals: dict[str, list[list[MealItemOut]]] = {}
     for day_idx, day_key in enumerate(DAY_KEYS):
-        row: list[str] = []
+        row: list[list[MealItemOut]] = []
         for slot in range(8):
             content = overrides.get((day_idx, slot), template_meals.get((day_idx, slot), ""))
-            row.append(content)
+            row.append(enrich_items(content, catalog))
         meals[day_key] = row
 
     return WeekDetail(
@@ -111,3 +118,24 @@ def build_week_detail(db: Session, week: TemplateWeek, user: User) -> WeekDetail
         notes=notes,
         meals=meals,
     )
+
+
+def week_detail_to_export_meals(detail: WeekDetail) -> dict[str, list[str]]:
+    """Flatten enriched meal items to newline strings for JSON backup."""
+    exported: dict[str, list[str]] = {}
+    for day_key, slots in detail.meals.items():
+        exported[day_key] = [join_slot_content(slot) for slot in slots]
+    return exported
+
+
+def slot_content_from_import(value: str | list) -> str:
+    """Accept legacy string or enriched item list from older exports."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        if not value:
+            return ""
+        if isinstance(value[0], dict):
+            return "\n".join(str(item.get("text", "")).strip() for item in value if item.get("text"))
+        return "\n".join(str(item).strip() for item in value if str(item).strip())
+    return str(value)

@@ -30,5 +30,5 @@ def admin_seed(
         sys.path.insert(0, str(BACKEND))
     import seed as seed_module
 
-    seed_module.run_seed(db)
-    return {"ok": True, "message": "Database seeded from meal-plan.json"}
+    seed_module.run_full_seed(db)
+    return {"ok": True, "message": "Database seeded from meal-plan.json and recipe-catalog.json"}

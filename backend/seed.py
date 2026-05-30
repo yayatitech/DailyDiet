@@ -11,21 +11,46 @@ from sqlalchemy.orm import Session
 
 ROOT = Path(__file__).resolve().parent.parent
 JSON_PATH = ROOT / "public" / "data" / "meal-plan.json"
+CATALOG_PATH = ROOT / "public" / "data" / "recipe-catalog.json"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from app.database import SessionLocal, engine, Base  # noqa: E402
 from app.deps import parse_start_date  # noqa: E402
+from app.meals import normalize_meal_name  # noqa: E402
 from app.models import (
     DAY_KEYS,
     MealCompletion,
     PlanTemplate,
+    RecipeCatalogEntry,
     TemplateMeal,
     TemplateWeek,
     TimeSlot,
     UserMealOverride,
     UserWeekNotes,
 )  # noqa: E402
+
+
+def seed_recipe_catalog(db: Session) -> None:
+    if not CATALOG_PATH.exists():
+        print(f"No recipe catalog at {CATALOG_PATH}, skipping")
+        return
+    entries = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+    db.query(RecipeCatalogEntry).delete()
+    for item in entries:
+        name = item.get("name", "").strip()
+        url = item.get("recipe_url", "").strip()
+        if not name or not url:
+            continue
+        db.add(
+            RecipeCatalogEntry(
+                name=name,
+                name_key=normalize_meal_name(name),
+                recipe_url=url,
+            )
+        )
+    db.commit()
+    print(f"Seeded {len(entries)} recipe catalog entries from {CATALOG_PATH}")
 
 
 def run_seed(db: Session | None = None) -> None:
@@ -92,6 +117,17 @@ def run_seed(db: Session | None = None) -> None:
     print(f"Seeded {len(data.get('weeks', []))} weeks from {JSON_PATH}")
 
 
+def run_full_seed(db: Session | None = None) -> None:
+    run_seed(db)
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
+    assert db is not None
+    seed_recipe_catalog(db)
+    if own_session:
+        db.close()
+
+
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
-    run_seed()
+    run_full_seed()

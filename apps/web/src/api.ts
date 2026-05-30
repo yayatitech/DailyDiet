@@ -21,13 +21,14 @@ export const DAY_LABELS: Record<DayKey, string> = {
 };
 
 export type TimeSlot = { id: number; label: string; time: string };
+export type MealItem = { text: string; recipe_url?: string | null };
 export type WeekSummary = { id: string; title: string; start_date: string | null };
 export type WeekDetail = {
   id: string;
   title: string;
   start_date: string | null;
   notes: string;
-  meals: Record<DayKey, string[]>;
+  meals: Record<DayKey, MealItem[][]>;
 };
 
 export function cellId(weekId: string, day: DayKey, slotIndex: number): string {

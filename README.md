@@ -57,13 +57,30 @@ cd backend && python init_db.py
 # or: curl -X POST http://localhost:3000/v1/admin/seed?run_import=true -H "X-Admin-Key: dev-admin-key"
 ```
 
+### Recipe catalog
+
+Meal slots are split on newlines into individual items. Recipe URLs come from a shared catalog in [`public/data/recipe-catalog.json`](public/data/recipe-catalog.json), loaded on seed.
+
+```bash
+# List catalog
+curl http://localhost:3000/v1/recipes
+
+# Add entry (admin)
+curl -X POST http://localhost:3000/v1/admin/recipes \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-Key: dev-admin-key" \
+  -d '{"name":"Mint Chutney","recipe_url":"https://example.com/mint-chutney"}'
+```
+
+After editing `recipe-catalog.json`, re-run `python init_db.py` or the admin seed endpoint.
+
 ## Project layout
 
 ```
 backend/          FastAPI + SQLAlchemy
 apps/web/         React web client
 apps/mobile/      Expo scaffold (Phase 3)
-public/data/      Seed JSON for DB import
+public/data/      Seed JSON for DB import (meal plan + recipe catalog)
 docs/             Requirements & architecture
 scripts/          Excel import (Python stdlib)
 ```

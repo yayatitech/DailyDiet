@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import build_week_detail, day_to_index, get_current_user, get_week_by_key, index_to_day, require_admin
+from app.deps import build_week_detail, day_to_index, get_current_user, get_week_by_key, index_to_day, require_admin, slot_content_from_import, week_detail_to_export_meals
 from app.models import (
     DAY_KEYS,
     MealCompletion,
@@ -191,7 +191,18 @@ def clear_completions(db: Session = Depends(get_db), user: User = Depends(get_cu
 def export_data(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     weeks = db.query(TemplateWeek).order_by(TemplateWeek.week_index).all()
     slots = db.query(TimeSlot).order_by(TimeSlot.slot_index).all()
-    plan_weeks = [build_week_detail(db, w, user).model_dump() for w in weeks]
+    plan_weeks = []
+    for w in weeks:
+        detail = build_week_detail(db, w, user)
+        plan_weeks.append(
+            {
+                "id": detail.id,
+                "title": detail.title,
+                "start_date": detail.start_date,
+                "notes": detail.notes,
+                "meals": week_detail_to_export_meals(detail),
+            }
+        )
     tracking: dict[str, bool] = {}
     for c in db.query(MealCompletion).filter(MealCompletion.user_id == user.id).all():
         week = db.get(TemplateWeek, c.week_id)
@@ -222,7 +233,8 @@ def import_data(
         meals = week_data.get("meals", {})
         for day_key, slots in meals.items():
             day_idx = day_to_index(day_key)
-            for slot_idx, content in enumerate(slots[:8]):
+            for slot_idx, raw_content in enumerate(slots[:8]):
+                content = slot_content_from_import(raw_content)
                 template = next(
                     (m for m in week.meals if m.day_of_week == day_idx and m.slot_index == slot_idx),
                     None,

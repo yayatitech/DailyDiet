@@ -88,6 +88,15 @@ class UserWeekNotes(Base):
     notes: Mapped[str] = mapped_column(Text, default="")
 
 
+class RecipeCatalogEntry(Base):
+    __tablename__ = "recipe_catalog"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    name_key: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    recipe_url: Mapped[str] = mapped_column(String(2048))
+
+
 class MealCompletion(Base):
     __tablename__ = "meal_completions"
     __table_args__ = (UniqueConstraint("user_id", "week_id", "day_of_week", "slot_index"),)

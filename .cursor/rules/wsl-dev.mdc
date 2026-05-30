@@ -1,0 +1,12 @@
+---
+description: WSL/local dev setup — avoid redundant apt update
+alwaysApply: true
+---
+
+# WSL dev environment
+
+- Do **not** run `sudo apt-get update` (or `apt update`) on every setup or troubleshooting step.
+- Only run `apt update` if `apt install` fails with stale/missing package index errors.
+- Prefer **Docker** (`docker compose up -d`) or an existing **Python venv** before installing system packages.
+- One-time WSL packages (if venv/pip missing): `sudo apt install python3.12-venv python3-pip` — no update unless install fails.
+- Node is via **nvm** at `~/.nvm`; use `export PATH="$HOME/.nvm/versions/node/v24.16.0/bin:$PATH"` instead of apt-installing node.
