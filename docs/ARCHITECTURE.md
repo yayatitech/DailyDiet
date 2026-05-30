@@ -11,7 +11,6 @@ flowchart TB
   subgraph clients [Clients]
     web["apps/web React"]
     mobile["apps/mobile Expo"]
-    legacy["apps/web-legacy v1"]
   end
 
   subgraph backend [Python backend]
@@ -52,8 +51,7 @@ DailyDiet/
 │   ├── seed.py              # Load meal-plan.json → DB
 │   └── requirements.txt
 ├── apps/
-│   ├── web/                 # React + Vite (v2 client)
-│   ├── web-legacy/          # v1 vanilla TS SPA
+│   ├── web/                 # React + Vite web client
 │   └── mobile/              # Expo scaffold
 ├── docs/
 │   ├── REQUIREMENTS.md

@@ -6,7 +6,6 @@ Weekly meal tracker with **Python FastAPI** backend, **PostgreSQL**, **React** w
 |-----|---------|
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional & non-functional requirements |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, API, database |
-| [apps/web-legacy/README.md](apps/web-legacy/README.md) | v1 static SPA (repo root) |
 
 ## Quick start
 
@@ -62,9 +61,9 @@ cd backend && python init_db.py
 
 ```
 backend/          FastAPI + SQLAlchemy
-apps/web/         React v2 client
+apps/web/         React web client
 apps/mobile/      Expo scaffold (Phase 3)
-apps/web-legacy/  pointer to v1 root SPA
+public/data/      Seed JSON for DB import
 docs/             Requirements & architecture
 scripts/          Excel import (Python stdlib)
 ```

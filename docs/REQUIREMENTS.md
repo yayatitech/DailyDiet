@@ -103,8 +103,7 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 ## 4. Constraints and assumptions
 
 - PostgreSQL is the runtime source of truth; Excel is admin input only.
-- Python 3.11+ for backend; Node.js only for web/mobile tooling.
-- v1 static SPA remains in `apps/web-legacy/` for reference until deprecated.
+- Python 3.11+ for backend; Node.js for web/mobile clients only.
 - Solo developer: prefer simple deployment (Docker Compose locally).
 
 ---
