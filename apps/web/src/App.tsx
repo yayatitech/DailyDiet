@@ -3,6 +3,7 @@ import {
   api,
   cellId,
   clearTokens,
+  completionSet,
   DAY_KEYS,
   DAY_LABELS,
   DayKey,
@@ -15,14 +16,44 @@ import {
   WeekSummary,
 } from "./api";
 import MealSlotEditor, { itemsToContent } from "./MealSlotEditor";
+import MealSlotViewer from "./MealSlotViewer";
 
-type ViewMode = "week" | "day";
+type LayoutMode = "week" | "day";
+type InteractionMode = "view" | "edit";
 
-function completionSet(
-  weekId: string,
-  rows: { day: DayKey; slot_index: number }[]
-): Set<string> {
-  return new Set(rows.map((r) => cellId(weekId, r.day, r.slot_index)));
+const INTERACTION_MODE_KEY = "dailyDiet.interactionMode";
+
+function loadInteractionMode(): InteractionMode {
+  const stored = localStorage.getItem(INTERACTION_MODE_KEY);
+  return stored === "edit" ? "edit" : "view";
+}
+
+function saveInteractionMode(mode: InteractionMode): void {
+  localStorage.setItem(INTERACTION_MODE_KEY, mode);
+}
+
+function MealSlotCell({
+  items,
+  checked,
+  isView,
+  onToggle,
+  onChange,
+}: {
+  items: MealItem[];
+  checked: boolean;
+  isView: boolean;
+  onToggle: (checked: boolean) => void;
+  onChange: (items: MealItem[]) => void;
+}) {
+  if (isView) {
+    return (
+      <label className="cell-label">
+        <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => onToggle(e.target.checked)} />
+        <MealSlotViewer items={items} />
+      </label>
+    );
+  }
+  return <MealSlotEditor items={items} onChange={onChange} />;
 }
 
 export default function App() {
@@ -31,12 +62,20 @@ export default function App() {
   const [weekId, setWeekId] = useState("");
   const [week, setWeek] = useState<WeekDetail | null>(null);
   const [done, setDone] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>("week");
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>(loadInteractionMode);
   const [day, setDay] = useState<DayKey>("monday");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isView = interactionMode === "view";
+
+  const setMode = (mode: InteractionMode) => {
+    setInteractionMode(mode);
+    saveInteractionMode(mode);
+  };
 
   const loadWeek = useCallback(async (id: string) => {
     const [w, c] = await Promise.all([api.week(id), api.completions(id)]);
@@ -115,7 +154,7 @@ export default function App() {
       <header className="app-header">
         <div className="brand">
           <h1>DailyDiet</h1>
-          <p className="subtitle">Fitelo Weekly Meal Plan · v2</p>
+          <p className="subtitle">Weekly Meal Plan · v2</p>
         </div>
         <div className="controls">
           <label className="control">
@@ -127,10 +166,14 @@ export default function App() {
             </select>
           </label>
           <div className="view-toggle">
-            <button type="button" className={`view-btn ${viewMode === "week" ? "active" : ""}`} onClick={() => setViewMode("week")}>Week grid</button>
-            <button type="button" className={`view-btn ${viewMode === "day" ? "active" : ""}`} onClick={() => setViewMode("day")}>Day view</button>
+            <button type="button" className={`view-btn ${layoutMode === "week" ? "active" : ""}`} onClick={() => setLayoutMode("week")}>Week grid</button>
+            <button type="button" className={`view-btn ${layoutMode === "day" ? "active" : ""}`} onClick={() => setLayoutMode("day")}>Day view</button>
           </div>
-          <label className={`control ${viewMode === "day" ? "" : "hidden"}`}>
+          <div className="view-toggle">
+            <button type="button" className={`view-btn ${interactionMode === "view" ? "active" : ""}`} onClick={() => setMode("view")}>View</button>
+            <button type="button" className={`view-btn ${interactionMode === "edit" ? "active" : ""}`} onClick={() => setMode("edit")}>Edit</button>
+          </div>
+          <label className={`control ${layoutMode === "day" ? "" : "hidden"}`}>
             <span>Day</span>
             <select value={day} onChange={(e) => setDay(e.target.value as DayKey)}>
               {DAY_KEYS.map((d) => (
@@ -140,8 +183,12 @@ export default function App() {
           </label>
         </div>
         <div className="actions">
-          <button type="button" className="btn secondary" onClick={async () => { await api.resetWeek(weekId); await loadWeek(weekId); }}>Reset week</button>
-          <button type="button" className="btn secondary" onClick={async () => { await api.clearCompletions(); setDone(new Set()); }}>Reset tracking</button>
+          {!isView && (
+            <>
+              <button type="button" className="btn secondary" onClick={async () => { await api.resetWeek(weekId); await loadWeek(weekId); }}>Reset week</button>
+              <button type="button" className="btn secondary" onClick={async () => { await api.clearCompletions(); setDone(new Set()); }}>Reset tracking</button>
+            </>
+          )}
           <button type="button" className="btn" onClick={async () => {
             const b = await api.export();
             const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
@@ -150,16 +197,18 @@ export default function App() {
             a.download = `dailydiet-${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
           }}>Export JSON</button>
-          <label className="btn secondary import-label">
-            Import JSON
-            <input type="file" accept="application/json" hidden onChange={async (e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              const text = await f.text();
-              await api.import(JSON.parse(text));
-              await loadWeek(weekId);
-            }} />
-          </label>
+          {!isView && (
+            <label className="btn secondary import-label">
+              Import JSON
+              <input type="file" accept="application/json" hidden onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const text = await f.text();
+                await api.import(JSON.parse(text));
+                await loadWeek(weekId);
+              }} />
+            </label>
+          )}
         </div>
       </header>
 
@@ -181,9 +230,9 @@ export default function App() {
 
       {error && <p className="error">{error}</p>}
       {week && (
-        <main>
+        <main className={isView ? "" : "main-edit-mode"}>
           <h2 className="week-title">{week.title}</h2>
-          {viewMode === "week" ? (
+          {layoutMode === "week" ? (
             <div className="grid-wrap">
               <table className="meal-grid">
                 <thead>
@@ -206,13 +255,13 @@ export default function App() {
                         const checked = done.has(cid);
                         return (
                           <td key={d} className={`meal-cell${today === d ? " col-today" : ""}${checked ? " cell-done" : ""}`}>
-                            <label className="cell-label">
-                              <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => toggleDone(d, slot, e.target.checked)} />
-                              <MealSlotEditor
-                                items={week.meals[d][slot] ?? []}
-                                onChange={(items) => debouncedMeal(d, slot, items)}
-                              />
-                            </label>
+                            <MealSlotCell
+                              items={week.meals[d][slot] ?? []}
+                              checked={checked}
+                              isView={isView}
+                              onToggle={(c) => toggleDone(d, slot, c)}
+                              onChange={(items) => debouncedMeal(d, slot, items)}
+                            />
                           </td>
                         );
                       })}
@@ -232,13 +281,13 @@ export default function App() {
                       <span>{slots[slot]?.label ?? `Meal ${slot + 1}`}</span>
                       <span className="day-slot-time">{slots[slot]?.time ?? ""}</span>
                     </header>
-                    <label className="cell-label">
-                      <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => toggleDone(day, slot, e.target.checked)} />
-                      <MealSlotEditor
-                        items={week.meals[day][slot] ?? []}
-                        onChange={(items) => debouncedMeal(day, slot, items)}
-                      />
-                    </label>
+                    <MealSlotCell
+                      items={week.meals[day][slot] ?? []}
+                      checked={checked}
+                      isView={isView}
+                      onToggle={(c) => toggleDone(day, slot, c)}
+                      onChange={(items) => debouncedMeal(day, slot, items)}
+                    />
                   </article>
                 );
               })}
@@ -246,7 +295,11 @@ export default function App() {
           )}
           <section className="notes-section">
             <label htmlFor="week-notes">Notes</label>
-            <textarea id="week-notes" className="week-notes" rows={3} value={week.notes} onChange={(e) => debouncedNotes(e.target.value)} />
+            {isView ? (
+              <p id="week-notes" className="week-notes-readonly">{week.notes || "—"}</p>
+            ) : (
+              <textarea id="week-notes" className="week-notes" rows={3} value={week.notes} onChange={(e) => debouncedNotes(e.target.value)} />
+            )}
           </section>
         </main>
       )}

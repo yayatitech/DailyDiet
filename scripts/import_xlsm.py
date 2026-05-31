@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import Fitelo weekly meal plan from .xlsm to public/data/meal-plan.json."""
+"""Import weekly meal plan from .xlsm to public/data/meal-plan.json."""
 
 from __future__ import annotations
 
