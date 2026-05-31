@@ -1,6 +1,6 @@
 # DailyDiet v2 — Requirements Specification
 
-**Version:** 2.0  
+**Version:** 2.6  
 **Stack:** Python (FastAPI, SQLAlchemy, PostgreSQL) + React web + Expo mobile (Phase 3)  
 **Status:** Active
 
@@ -16,10 +16,12 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 
 | In scope (v2) | Out of scope (v2.0) |
 |---------------|---------------------|
-| Weekly/day meal views | Calorie/macro tracking |
-| Server-persisted edits & completions | Social sharing |
-| Multi-user auth (Phase 2) | In-browser Excel parsing |
-| Excel → DB admin import | Automated test suite (initial) |
+| Weekly/day/today meal views | Calorie/macro tracking |
+| Server-persisted edits & completions (logged in) | Social sharing |
+| Guest read-only template browse + login/register | In-browser Excel parsing |
+| Multi-user JWT auth | Automated test suite (initial) |
+| Rich recipes (pages, images, hybrid links) | |
+| Excel → DB admin import | |
 | Web + mobile API clients | |
 
 ### 1.3 Stakeholders
@@ -38,7 +40,8 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | **Completion** | Checkbox state: user marked a meal as done |
 | **Week key** | Stable id e.g. `week-1` matching import order |
 | **Meal item** | One named food within a time slot (e.g. "Mint Chutney") |
-| **Recipe catalog** | Global map of meal name → recipe URL, shared across all weeks/users |
+| **Recipe catalog** | Global map of meal name → recipe (ingredients, instructions, image, optional external URL) |
+| **Guest** | Anonymous visitor; sees template plan read-only until login |
 
 ---
 
@@ -82,7 +85,7 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | **FR-19** | Split slot text into distinct **meal items** (newline-delimited); display each on its own row in week grid and day view | Must |
-| **FR-20** | Show a **recipe link icon** next to a meal item when the catalog has a URL for that name; icon opens URL in new tab | Must |
+| **FR-20** | Show a **recipe link icon** when catalog matches; **hybrid link** — internal `/recipes/:id` when content exists, else external URL in new tab | Must |
 | **FR-21** | Maintain a **global recipe catalog** (meal name → URL); lookup is case-insensitive, whitespace-normalized | Must |
 | **FR-22** | Admin can **CRUD catalog entries** via API; seed from JSON on deploy/import | Must |
 | **FR-23** | Slot **completion checkbox** remains at slot level (all items in cell share done state) | Must |
@@ -92,16 +95,16 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| **FR-25** | **View mode** (default): read-only meal items, recipe links, slot checkboxes, read-only notes | Must |
-| **FR-26** | **Edit mode**: editable meals/notes; no checkboxes; reset/import actions visible | Must |
+| **FR-25** | **View mode** (default, logged in): read-only meal items, recipe links, slot checkboxes, read-only notes. Guests see template plan without checkboxes or mode toggle | Must |
+| **FR-26** | **Edit mode** (logged in only): editable meals/notes via recipe combobox; no checkboxes; reset/import actions visible | Must |
 
 ### 2.6 Today dashboard & recipe admin
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | **FR-27** | On load, auto-select the template week whose date range includes today; default layout is **Today** | Must |
-| **FR-28** | **Today** layout shows today's 8 slots, completion progress, and checkboxes (View mode) | Must |
-| **FR-29** | **Edit mode** includes a web **recipe catalog admin** panel: list, add, edit, delete entries via admin API | Must |
+| **FR-28** | **Today** layout shows today's 8 slots and completion progress; checkboxes when logged in (View mode) | Must |
+| **FR-29** | **Edit mode** nav link to **Recipes** admin pages (`/recipes`); list, add, edit, delete via admin API | Must |
 
 ### 2.7 Rich recipes & dedicated pages
 
@@ -113,6 +116,13 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | **FR-33** | **Hybrid meal link**: internal recipe page when content exists; else external URL in new tab | Must |
 | **FR-34** | Admin can **upload recipe images** to server storage (`public/recipes/`) | Must |
 | **FR-35** | **Edit mode** meal items use an editable recipe combobox; unmatched text offers **Create recipe** shortcut to `/recipes/new?name=…` | Must |
+
+### 2.8 Authentication & guest mode
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| **FR-36** | Login/register on dedicated `/login` page; header shows Log in / Sign up or user email + Log out | Must |
+| **FR-37** | **Guest** users browse template meal plan read-only (no edits, tracking, import/export); **authenticated** users get personal overrides and tracking | Must |
 
 ---
 
@@ -164,18 +174,19 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | FR-10 | `GET /v1/export` | Export JSON | 1 |
 | FR-11 | `POST /v1/import` | Import JSON | 1 |
 | FR-12 | `POST /v1/admin/seed` | — | 1 |
-| FR-13–16 | `/v1/auth/*`, `/v1/me` | Login/register | 2 |
+| FR-13–16 | `/v1/auth/*`, `/v1/me` | `/login`, token storage | 2 |
 | FR-17–18 | all `/v1/*` | Expo app | 3 |
 | FR-19–20 | `GET /v1/weeks/:id` (enriched items) | `MealSlotViewer` / `MealSlotEditor` | 1 |
 | FR-21–22 | `GET /v1/recipes`, `/v1/admin/recipes` | admin via API/docs | 1 |
 | FR-23 | existing completions API | Checkbox in View mode | 1 |
 | FR-24 | `PATCH /v1/weeks/:id/meals` | per-item inputs in Edit mode | 1 |
-| FR-25 | `GET /v1/weeks/:id`, completions API | View mode: read-only meals, checkboxes | 1 |
-| FR-26 | `PATCH` meals/notes, reset/import | Edit mode: editable meals/notes | 1 |
-| FR-27–28 | `GET /v1/weeks`, completions | Today layout, auto week/day | 1 |
+| FR-25 | `GET /v1/weeks/:id`, completions API | View mode: read-only meals, checkboxes (logged in) | 1 |
+| FR-26 | `PATCH` meals/notes, reset/import | Edit mode (logged in): editable meals/notes | 1 |
+| FR-27–28 | `GET /v1/weeks`, completions | Today layout; progress when logged in | 1 |
 | FR-29 | `/v1/recipes`, `/v1/admin/recipes` | Recipe list page (`/recipes`) in Edit mode nav | 1 |
 | FR-30–34 | `/v1/recipes/:id`, `/v1/admin/recipes`, image upload | Recipe view/edit pages, hybrid meal links | 1 |
 | FR-35 | `GET /v1/recipes` | `RecipeCombobox` in Edit mode meal rows | 1 |
+| FR-36–37 | `/v1/auth/*`, `/v1/me`, optional user on GET weeks | `/login`, guest read-only, header auth | 2 |
 
 ---
 
@@ -189,3 +200,4 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | 2026-05-31 | 2.3 | Today dashboard + recipe catalog admin UI (FR-27–29) |
 | 2026-05-31 | 2.4 | Rich recipes, dedicated pages, hybrid links, image upload (FR-30–34) |
 | 2026-05-31 | 2.5 | Recipe combobox in Edit mode meal slots (FR-35) |
+| 2026-05-31 | 2.6 | Auth page, guest read-only mode (FR-36–37) |

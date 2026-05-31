@@ -79,6 +79,8 @@ export function formatTodayHeading(day: DayKey | null): string {
   return `Today — ${DAY_LABELS[day]}, ${dateStr}`;
 }
 
+export type UserProfile = { id: string; email: string };
+
 export type Ingredient = { amount: string; item: string };
 
 export type RecipeSummary = {
@@ -139,6 +141,12 @@ export function clearTokens(): void {
   localStorage.removeItem("dailyDiet.refreshToken");
 }
 
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     ...(init?.headers as Record<string, string>),
@@ -151,6 +159,9 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
   const res = await fetch(path, { ...init, headers });
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      unauthorizedHandler?.();
+    }
     const err = await res.text();
     throw new Error(err || res.statusText);
   }
@@ -197,6 +208,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  me: () => apiFetch<UserProfile>("/v1/me"),
   recipes: () => apiFetch<RecipeSummary[]>("/v1/recipes"),
   recipe: (id: number) => apiFetch<RecipeDetail>(`/v1/recipes/${id}`),
   createRecipe: (adminKey: string, body: RecipeInput) =>

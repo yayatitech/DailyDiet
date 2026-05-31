@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     default_dev_password: str = "devpassword"
     public_dir: str = "../public"
     max_recipe_image_bytes: int = 5 * 1024 * 1024
+    allow_anonymous_dev_user: bool = False
 
     @property
     def cors_origin_list(self) -> list[str]:

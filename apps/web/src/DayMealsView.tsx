@@ -9,6 +9,7 @@ type Props = {
   weekId: string;
   done: Set<string>;
   isView: boolean;
+  showTracking: boolean;
   recipes: RecipeSummary[];
   cellId: (weekId: string, day: DayKey, slot: number) => string;
   onToggle: (slot: number, checked: boolean) => void;
@@ -19,6 +20,7 @@ function MealSlotCell({
   items,
   checked,
   isView,
+  showTracking,
   recipes,
   onToggle,
   onChange,
@@ -26,11 +28,15 @@ function MealSlotCell({
   items: MealItem[];
   checked: boolean;
   isView: boolean;
+  showTracking: boolean;
   recipes: RecipeSummary[];
   onToggle: (checked: boolean) => void;
   onChange: (items: MealItem[]) => void;
 }) {
   if (isView) {
+    if (!showTracking) {
+      return <MealSlotViewer items={items} />;
+    }
     return (
       <label className="cell-label">
         <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => onToggle(e.target.checked)} />
@@ -48,6 +54,7 @@ export default function DayMealsView({
   weekId,
   done,
   isView,
+  showTracking,
   recipes,
   cellId,
   onToggle,
@@ -68,6 +75,7 @@ export default function DayMealsView({
               items={weekMeals[slot] ?? []}
               checked={checked}
               isView={isView}
+              showTracking={showTracking}
               recipes={recipes}
               onToggle={(c) => onToggle(slot, c)}
               onChange={(items) => onChange(slot, items)}

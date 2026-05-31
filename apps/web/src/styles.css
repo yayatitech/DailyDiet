@@ -30,17 +30,67 @@ body {
 
 .app-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 1rem;
-  align-items: flex-end;
   margin-bottom: 1.25rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
 
+.app-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
 .brand h1 { margin: 0; font-size: 1.5rem; color: var(--accent); }
+.brand-link { text-decoration: none; color: inherit; }
 .subtitle { margin: 0.15rem 0 0; font-size: 0.9rem; color: var(--muted); }
-.controls { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; flex: 1; }
+.auth-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.auth-nav-loading { min-width: 8rem; min-height: 2rem; }
+.auth-email {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.auth-btn { text-decoration: none; display: inline-flex; align-items: center; padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+.guest-banner {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+.guest-banner a { color: var(--accent); font-weight: 600; }
+.login-page-header { align-items: center; }
+.login-page { display: flex; justify-content: center; padding: 2rem 1rem; }
+.login-card {
+  width: 100%;
+  max-width: 24rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.login-card h2 { margin: 0 0 0.5rem; color: var(--accent); }
+.login-form { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+.login-switch, .login-guest { margin: 1rem 0 0; font-size: 0.9rem; color: var(--muted); }
+.login-switch a, .login-guest a { color: var(--accent); }
+.recipe-shell-header { margin-bottom: 0.75rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; width: 100%; }
 .control { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: var(--muted); }
 .control select, .control input {
   min-width: 12rem;
@@ -54,7 +104,7 @@ body {
 .view-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .view-btn { border: none; background: var(--surface); padding: 0.45rem 0.75rem; font: inherit; cursor: pointer; color: var(--muted); }
 .view-btn.active { background: var(--accent); color: #fff; }
-.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; width: 100%; }
 .btn { padding: 0.45rem 0.85rem; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent); color: #fff; font: inherit; cursor: pointer; }
 .btn.secondary { background: var(--surface); color: var(--accent); }
 .import-label { display: inline-flex; align-items: center; cursor: pointer; }

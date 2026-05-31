@@ -4,7 +4,17 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import build_week_detail, day_to_index, get_current_user, get_week_by_key, index_to_day, require_admin, slot_content_from_import, week_detail_to_export_meals
+from app.deps import (
+    build_week_detail,
+    day_to_index,
+    get_optional_user,
+    get_required_user,
+    get_week_by_key,
+    index_to_day,
+    require_admin,
+    slot_content_from_import,
+    week_detail_to_export_meals,
+)
 from app.models import (
     DAY_KEYS,
     MealCompletion,
@@ -30,7 +40,7 @@ router = APIRouter(prefix="/v1", tags=["weeks"])
 
 
 @router.get("/me", response_model=UserOut)
-def me(user: User = Depends(get_current_user)):
+def me(user: User = Depends(get_required_user)):
     return user
 
 
@@ -49,7 +59,11 @@ def list_weeks(db: Session = Depends(get_db)):
 
 
 @router.get("/weeks/{week_key}", response_model=WeekDetail)
-def get_week(week_key: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def get_week(
+    week_key: str,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_optional_user),
+):
     week = get_week_by_key(db, week_key)
     return build_week_detail(db, week, user)
 
@@ -59,7 +73,7 @@ def patch_meal(
     week_key: str,
     body: MealPatch,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_required_user),
 ):
     week = get_week_by_key(db, week_key)
     day_idx = day_to_index(body.day)
@@ -94,7 +108,7 @@ def patch_notes(
     week_key: str,
     body: NotesPatch,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_required_user),
 ):
     week = get_week_by_key(db, week_key)
     row = (
@@ -114,7 +128,7 @@ def patch_notes(
 def reset_week(
     week_key: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_required_user),
 ):
     week = get_week_by_key(db, week_key)
     db.query(UserMealOverride).filter(
@@ -131,8 +145,10 @@ def reset_week(
 def list_completions(
     week_key: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User | None = Depends(get_optional_user),
 ):
+    if user is None:
+        return []
     week = get_week_by_key(db, week_key)
     rows = (
         db.query(MealCompletion)
@@ -150,7 +166,7 @@ def toggle_completion(
     week_key: str,
     body: CompletionToggle,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_required_user),
 ):
     week = get_week_by_key(db, week_key)
     day_idx = day_to_index(body.day)
@@ -181,14 +197,14 @@ def toggle_completion(
 
 
 @router.delete("/completions")
-def clear_completions(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def clear_completions(db: Session = Depends(get_db), user: User = Depends(get_required_user)):
     db.query(MealCompletion).filter(MealCompletion.user_id == user.id).delete()
     db.commit()
     return {"ok": True}
 
 
 @router.get("/export", response_model=ExportBundle)
-def export_data(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def export_data(db: Session = Depends(get_db), user: User = Depends(get_required_user)):
     weeks = db.query(TemplateWeek).order_by(TemplateWeek.week_index).all()
     slots = db.query(TimeSlot).order_by(TimeSlot.slot_index).all()
     plan_weeks = []
@@ -223,7 +239,7 @@ def export_data(db: Session = Depends(get_db), user: User = Depends(get_current_
 def import_data(
     bundle: ExportBundle,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_required_user),
 ):
     for week_data in bundle.plan.get("weeks", []):
         week_key = week_data.get("id")
