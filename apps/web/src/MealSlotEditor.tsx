@@ -1,4 +1,5 @@
 import { MealItem } from "./api";
+import RecipeLink from "./RecipeLink";
 
 type Props = {
   items: MealItem[];
@@ -26,20 +27,7 @@ export default function MealSlotEditor({ items, onChange }: Props) {
     <div className="meal-items">
       {rows.map((item, index) => (
         <div key={index} className="meal-item-row">
-          {item.recipe_url ? (
-            <a
-              className="recipe-link"
-              href={item.recipe_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Recipe for ${item.text}`}
-              title={`Recipe for ${item.text}`}
-            >
-              ↗
-            </a>
-          ) : (
-            <span className="recipe-link-placeholder" aria-hidden="true" />
-          )}
+          <RecipeLink text={item.text} recipeUrl={item.recipe_url} />
           <input
             type="text"
             className="meal-item-input"

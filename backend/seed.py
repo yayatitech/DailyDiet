@@ -83,7 +83,7 @@ def run_seed(db: Session | None = None) -> None:
             )
         )
 
-    template = PlanTemplate(name="Fitelo Weekly Meal Plan", source=str(JSON_PATH.name))
+    template = PlanTemplate(name="Weekly Meal Plan", source=str(JSON_PATH.name))
     db.add(template)
     db.flush()
 

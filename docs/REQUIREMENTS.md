@@ -10,7 +10,7 @@
 
 ### 1.1 Purpose
 
-DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 meals per day** at fixed times. Version 2 adds a **client–server architecture** with permanent database storage, multi-user support, and web/mobile clients sharing one REST API.
+DailyDiet helps users follow a structured **weekly meal plan** with **8 meals per day** at fixed times. Version 2 adds a **client–server architecture** with permanent database storage, multi-user support, and web/mobile clients sharing one REST API.
 
 ### 1.2 Scope
 
@@ -88,6 +88,13 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 | **FR-23** | Slot **completion checkbox** remains at slot level (all items in cell share done state) | Must |
 | **FR-24** | User can still **edit slot content**; edits persist as newline-joined text (backward compatible with existing overrides) | Must |
 
+### 2.5 View vs Edit mode
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| **FR-25** | **View mode** (default): read-only meal items, recipe links, slot checkboxes, read-only notes | Must |
+| **FR-26** | **Edit mode**: editable meals/notes; no checkboxes; reset/import actions visible | Must |
+
 ---
 
 ## 3. Non-functional requirements
@@ -140,6 +147,12 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 | FR-12 | `POST /v1/admin/seed` | — | 1 |
 | FR-13–16 | `/v1/auth/*`, `/v1/me` | Login/register | 2 |
 | FR-17–18 | all `/v1/*` | Expo app | 3 |
+| FR-19–20 | `GET /v1/weeks/:id` (enriched items) | `MealSlotViewer` / `MealSlotEditor` | 1 |
+| FR-21–22 | `GET /v1/recipes`, `/v1/admin/recipes` | admin via API/docs | 1 |
+| FR-23 | existing completions API | Checkbox in View mode | 1 |
+| FR-24 | `PATCH /v1/weeks/:id/meals` | per-item inputs in Edit mode | 1 |
+| FR-25 | `GET /v1/weeks/:id`, completions API | View mode: read-only meals, checkboxes | 1 |
+| FR-26 | `PATCH` meals/notes, reset/import | Edit mode: editable meals/notes | 1 |
 
 ---
 
@@ -149,3 +162,4 @@ DailyDiet helps users follow a structured **Fitelo weekly meal plan** with **8 m
 |------|---------|--------|
 | 2026-05-30 | 2.0 | Initial v2 requirements; Python stack |
 | 2026-05-30 | 2.1 | Meal items per slot + recipe catalog (FR-19–24) |
+| 2026-05-30 | 2.2 | View vs Edit interaction modes (FR-25–26) |

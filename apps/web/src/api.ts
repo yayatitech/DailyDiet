@@ -35,6 +35,13 @@ export function cellId(weekId: string, day: DayKey, slotIndex: number): string {
   return `${weekId}:${day}:${slotIndex}`;
 }
 
+export function completionSet(
+  weekId: string,
+  rows: { day: DayKey; slot_index: number }[]
+): Set<string> {
+  return new Set(rows.map((r) => cellId(weekId, r.day, r.slot_index)));
+}
+
 export function todayDayKey(week: WeekDetail): DayKey | null {
   if (!week.start_date) return null;
   const start = new Date(week.start_date + "T00:00:00");
