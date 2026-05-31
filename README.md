@@ -69,7 +69,7 @@ curl http://localhost:3000/v1/recipes
 curl -X POST http://localhost:3000/v1/admin/recipes \
   -H "Content-Type: application/json" \
   -H "X-Admin-Key: dev-admin-key" \
-  -d '{"name":"Mint Chutney","recipe_url":"https://example.com/mint-chutney"}'
+  -d '{"name":"Mint Chutney","external_url":"https://example.com/mint-chutney","ingredients":[{"amount":"1 cup","item":"mint"}],"instructions":"Blend and serve."}'
 ```
 
 After editing `recipe-catalog.json`, re-run `python init_db.py` or the admin seed endpoint.

@@ -95,6 +95,24 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | **FR-25** | **View mode** (default): read-only meal items, recipe links, slot checkboxes, read-only notes | Must |
 | **FR-26** | **Edit mode**: editable meals/notes; no checkboxes; reset/import actions visible | Must |
 
+### 2.6 Today dashboard & recipe admin
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| **FR-27** | On load, auto-select the template week whose date range includes today; default layout is **Today** | Must |
+| **FR-28** | **Today** layout shows today's 8 slots, completion progress, and checkboxes (View mode) | Must |
+| **FR-29** | **Edit mode** includes a web **recipe catalog admin** panel: list, add, edit, delete entries via admin API | Must |
+
+### 2.7 Rich recipes & dedicated pages
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| **FR-30** | Store full recipe content in PostgreSQL (`name`, `display_name`, `ingredients`, `instructions`, `image`, optional `external_url`) | Must |
+| **FR-31** | **Recipe view page** shows photo, ingredients, and instructions at `/recipes/:id` | Must |
+| **FR-32** | **Recipe edit/create pages** at `/recipes/new` and `/recipes/:id/edit` (admin API key) | Must |
+| **FR-33** | **Hybrid meal link**: internal recipe page when content exists; else external URL in new tab | Must |
+| **FR-34** | Admin can **upload recipe images** to server storage (`public/recipes/`) | Must |
+
 ---
 
 ## 3. Non-functional requirements
@@ -153,6 +171,9 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | FR-24 | `PATCH /v1/weeks/:id/meals` | per-item inputs in Edit mode | 1 |
 | FR-25 | `GET /v1/weeks/:id`, completions API | View mode: read-only meals, checkboxes | 1 |
 | FR-26 | `PATCH` meals/notes, reset/import | Edit mode: editable meals/notes | 1 |
+| FR-27–28 | `GET /v1/weeks`, completions | Today layout, auto week/day | 1 |
+| FR-29 | `/v1/recipes`, `/v1/admin/recipes` | Recipe list page (`/recipes`) in Edit mode nav | 1 |
+| FR-30–34 | `/v1/recipes/:id`, `/v1/admin/recipes`, image upload | Recipe view/edit pages, hybrid meal links | 1 |
 
 ---
 
@@ -163,3 +184,5 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | 2026-05-30 | 2.0 | Initial v2 requirements; Python stack |
 | 2026-05-30 | 2.1 | Meal items per slot + recipe catalog (FR-19–24) |
 | 2026-05-30 | 2.2 | View vs Edit interaction modes (FR-25–26) |
+| 2026-05-31 | 2.3 | Today dashboard + recipe catalog admin UI (FR-27–29) |
+| 2026-05-31 | 2.4 | Rich recipes, dedicated pages, hybrid links, image upload (FR-30–34) |

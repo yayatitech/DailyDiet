@@ -11,6 +11,7 @@ from app.config import settings
 from app.database import get_db
 from app.meals import enrich_items, join_slot_content
 from app.models import DAY_KEYS, MealCompletion, RecipeCatalogEntry, TemplateWeek, User, UserMealOverride, UserWeekNotes
+from app.recipe_utils import recipe_lookup_from_entry
 from app.schemas import MealItemOut, WeekDetail
 
 security = HTTPBearer(auto_error=False)
@@ -80,9 +81,9 @@ def get_week_by_key(db: Session, week_key: str) -> TemplateWeek:
     return week
 
 
-def get_recipe_catalog_map(db: Session) -> dict[str, str]:
-    rows = db.query(RecipeCatalogEntry.name_key, RecipeCatalogEntry.recipe_url).all()
-    return {name_key: url for name_key, url in rows}
+def get_recipe_catalog_map(db: Session):
+    rows = db.query(RecipeCatalogEntry).all()
+    return {entry.name_key: recipe_lookup_from_entry(entry) for entry in rows}
 
 
 def build_week_detail(db: Session, week: TemplateWeek, user: User) -> WeekDetail:

@@ -21,7 +21,12 @@ export const DAY_LABELS: Record<DayKey, string> = {
 };
 
 export type TimeSlot = { id: number; label: string; time: string };
-export type MealItem = { text: string; recipe_url?: string | null };
+export type MealItem = {
+  text: string;
+  recipe_id?: number | null;
+  recipe_url?: string | null;
+  recipe_external?: boolean;
+};
 export type WeekSummary = { id: string; title: string; start_date: string | null };
 export type WeekDetail = {
   id: string;
@@ -42,15 +47,68 @@ export function completionSet(
   return new Set(rows.map((r) => cellId(weekId, r.day, r.slot_index)));
 }
 
-export function todayDayKey(week: WeekDetail): DayKey | null {
+export function todayDayKey(week: Pick<WeekDetail, "start_date">): DayKey | null {
+  return dayKeyForWeekOnDate(week);
+}
+
+export function dayKeyForWeekOnDate(
+  week: Pick<WeekSummary, "start_date">,
+  date: Date = new Date()
+): DayKey | null {
   if (!week.start_date) return null;
   const start = new Date(week.start_date + "T00:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.floor((today.getTime() - start.getTime()) / 86400000);
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const diff = Math.floor((d.getTime() - start.getTime()) / 86400000);
   if (diff < 0 || diff > 6) return null;
   return DAY_KEYS[diff];
 }
+
+/** Pick the template week whose date range includes today, else the first week. */
+export function weekForToday(weeks: WeekSummary[]): WeekSummary | null {
+  for (const w of weeks) {
+    if (dayKeyForWeekOnDate(w) !== null) return w;
+  }
+  return weeks[0] ?? null;
+}
+
+export function formatTodayHeading(day: DayKey | null): string {
+  const d = new Date();
+  const dateStr = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  if (!day) return `Today — ${dateStr}`;
+  return `Today — ${DAY_LABELS[day]}, ${dateStr}`;
+}
+
+export type Ingredient = { amount: string; item: string };
+
+export type RecipeSummary = {
+  id: number;
+  name: string;
+  display_name: string | null;
+  has_image: boolean;
+  has_content: boolean;
+};
+
+export type RecipeDetail = {
+  id: number;
+  name: string;
+  name_key: string;
+  display_name: string | null;
+  ingredients: Ingredient[];
+  instructions: string;
+  image_url: string | null;
+  external_url: string | null;
+  has_content: boolean;
+  updated_at: string | null;
+};
+
+export type RecipeInput = {
+  name: string;
+  display_name?: string | null;
+  ingredients?: Ingredient[];
+  instructions?: string;
+  external_url?: string | null;
+};
 
 export function getToken(): string | null {
   return localStorage.getItem("dailyDiet.accessToken");
@@ -68,9 +126,11 @@ export function clearTokens(): void {
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(init?.headers as Record<string, string>),
   };
+  if (!(init?.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -121,5 +181,33 @@ export const api = {
     apiFetch<{ access_token: string; refresh_token: string }>("/v1/auth/register", {
       method: "POST",
       body: JSON.stringify({ email, password }),
+    }),
+  recipes: () => apiFetch<RecipeSummary[]>("/v1/recipes"),
+  recipe: (id: number) => apiFetch<RecipeDetail>(`/v1/recipes/${id}`),
+  createRecipe: (adminKey: string, body: RecipeInput) =>
+    apiFetch<RecipeDetail>("/v1/admin/recipes", {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+      body: JSON.stringify(body),
+    }),
+  updateRecipe: (adminKey: string, id: number, body: Partial<RecipeInput>) =>
+    apiFetch<RecipeDetail>(`/v1/admin/recipes/${id}`, {
+      method: "PATCH",
+      headers: { "X-Admin-Key": adminKey },
+      body: JSON.stringify(body),
+    }),
+  uploadRecipeImage: (adminKey: string, id: number, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return apiFetch<RecipeDetail>(`/v1/admin/recipes/${id}/image`, {
+      method: "POST",
+      headers: { "X-Admin-Key": adminKey },
+      body: form,
+    });
+  },
+  deleteRecipe: (adminKey: string, id: number) =>
+    apiFetch(`/v1/admin/recipes/${id}`, {
+      method: "DELETE",
+      headers: { "X-Admin-Key": adminKey },
     }),
 };

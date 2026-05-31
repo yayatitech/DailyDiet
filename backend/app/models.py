@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -94,7 +94,12 @@ class RecipeCatalogEntry(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     name_key: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    recipe_url: Mapped[str] = mapped_column(String(2048))
+    display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    ingredients: Mapped[list] = mapped_column(JSONB, default=list)
+    instructions: Mapped[str] = mapped_column(Text, default="")
+    image_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    external_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class MealCompletion(Base):

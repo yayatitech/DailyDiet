@@ -27,7 +27,11 @@ export default function MealSlotEditor({ items, onChange }: Props) {
     <div className="meal-items">
       {rows.map((item, index) => (
         <div key={index} className="meal-item-row">
-          <RecipeLink text={item.text} recipeUrl={item.recipe_url} />
+          <RecipeLink
+            text={item.text}
+            recipeUrl={item.recipe_url}
+            recipeExternal={item.recipe_external}
+          />
           <input
             type="text"
             className="meal-item-input"

@@ -28,6 +28,8 @@ services:
       CORS_ORIGINS: http://localhost:5173,http://localhost:8081
     ports:
       - "3000:3000"
+    volumes:
+      - ./public/recipes:/app/public/recipes
     depends_on:
       postgres:
         condition: service_healthy
