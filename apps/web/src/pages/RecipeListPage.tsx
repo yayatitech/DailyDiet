@@ -61,7 +61,7 @@ export default function RecipeListPage() {
         </p>
 
         <label className="control admin-key-control">
-          <span>Admin key</span>
+          <span className="label-required">Admin key</span>
           <input
             type="password"
             value={adminKey}

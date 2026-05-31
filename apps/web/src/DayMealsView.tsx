@@ -1,4 +1,4 @@
-import { DayKey, MealItem, TimeSlot } from "./api";
+import { DayKey, MealItem, RecipeSummary, TimeSlot } from "./api";
 import MealSlotEditor from "./MealSlotEditor";
 import MealSlotViewer from "./MealSlotViewer";
 
@@ -9,6 +9,7 @@ type Props = {
   weekId: string;
   done: Set<string>;
   isView: boolean;
+  recipes: RecipeSummary[];
   cellId: (weekId: string, day: DayKey, slot: number) => string;
   onToggle: (slot: number, checked: boolean) => void;
   onChange: (slot: number, items: MealItem[]) => void;
@@ -18,12 +19,14 @@ function MealSlotCell({
   items,
   checked,
   isView,
+  recipes,
   onToggle,
   onChange,
 }: {
   items: MealItem[];
   checked: boolean;
   isView: boolean;
+  recipes: RecipeSummary[];
   onToggle: (checked: boolean) => void;
   onChange: (items: MealItem[]) => void;
 }) {
@@ -35,7 +38,7 @@ function MealSlotCell({
       </label>
     );
   }
-  return <MealSlotEditor items={items} onChange={onChange} />;
+  return <MealSlotEditor items={items} recipes={recipes} onChange={onChange} />;
 }
 
 export default function DayMealsView({
@@ -45,6 +48,7 @@ export default function DayMealsView({
   weekId,
   done,
   isView,
+  recipes,
   cellId,
   onToggle,
   onChange,
@@ -64,6 +68,7 @@ export default function DayMealsView({
               items={weekMeals[slot] ?? []}
               checked={checked}
               isView={isView}
+              recipes={recipes}
               onToggle={(c) => onToggle(slot, c)}
               onChange={(items) => onChange(slot, items)}
             />

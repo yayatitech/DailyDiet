@@ -82,6 +82,48 @@ body {
   background: transparent;
 }
 .meal-item-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); background: #fff; }
+.recipe-combobox { position: relative; flex: 1; min-width: 0; }
+.recipe-combobox-input { width: 100%; }
+.recipe-combobox-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin: 0.15rem 0 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  max-height: 12rem;
+  overflow-y: auto;
+}
+.recipe-combobox-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.recipe-combobox-option:hover,
+.recipe-combobox-option.highlighted { background: var(--accent-soft); }
+.recipe-combobox-option-label { font-weight: 500; }
+.recipe-combobox-option-sub { font-size: 0.8rem; color: var(--muted); }
+.recipe-combobox-create {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+.recipe-combobox-create:hover { text-decoration: underline; }
 .meal-item-text { flex: 1; min-width: 0; padding: 0.2rem 0.35rem; font: inherit; word-break: break-word; }
 .meal-item-empty { margin: 0; padding: 0.2rem 0.35rem; color: var(--muted); }
 .recipe-link {
@@ -213,7 +255,11 @@ body {
 .day-slot-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600; }
 .day-slot-time { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
 .error { color: #b00020; padding: 1rem; }
-.auth-panel { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; padding: 0.75rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
+.control span.label-required::after {
+  content: " *";
+  color: #b00020;
+  font-weight: 600;
+}
 
 @media (max-width: 768px) {
   .app-header { flex-direction: column; align-items: stretch; }

@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import AliasChoices, BaseModel, EmailStr, Field
 
 DayKey = Literal[
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
@@ -133,16 +133,27 @@ class RecipeOut(BaseModel):
 
 
 class RecipeCreate(BaseModel):
+    model_config = {"populate_by_name": True}
+
     name: str = Field(min_length=1, max_length=255)
     display_name: str | None = Field(default=None, max_length=255)
     ingredients: list[IngredientIn] = Field(default_factory=list)
     instructions: str = ""
-    external_url: str | None = Field(default=None, max_length=2048)
+    external_url: str | None = Field(
+        default=None,
+        max_length=2048,
+        validation_alias=AliasChoices("external_url", "recipe_url"),
+    )
 
 
 class RecipeUpdate(BaseModel):
+    model_config = {"populate_by_name": True}
     name: str | None = Field(default=None, min_length=1, max_length=255)
     display_name: str | None = Field(default=None, max_length=255)
     ingredients: list[IngredientIn] | None = None
     instructions: str | None = None
-    external_url: str | None = Field(default=None, max_length=2048)
+    external_url: str | None = Field(
+        default=None,
+        max_length=2048,
+        validation_alias=AliasChoices("external_url", "recipe_url"),
+    )

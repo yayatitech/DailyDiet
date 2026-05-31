@@ -11,6 +11,7 @@ import {
   formatTodayHeading,
   getToken,
   MealItem,
+  RecipeSummary,
   setTokens,
   TimeSlot,
   todayDayKey,
@@ -40,12 +41,14 @@ function MealSlotCell({
   items,
   checked,
   isView,
+  recipes,
   onToggle,
   onChange,
 }: {
   items: MealItem[];
   checked: boolean;
   isView: boolean;
+  recipes: RecipeSummary[];
   onToggle: (checked: boolean) => void;
   onChange: (items: MealItem[]) => void;
 }) {
@@ -57,7 +60,7 @@ function MealSlotCell({
       </label>
     );
   }
-  return <MealSlotEditor items={items} onChange={onChange} />;
+  return <MealSlotEditor items={items} recipes={recipes} onChange={onChange} />;
 }
 
 export default function App() {
@@ -68,6 +71,7 @@ export default function App() {
   const [done, setDone] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("today");
   const [interactionMode, setInteractionMode] = useState<InteractionMode>(loadInteractionMode);
+  const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
   const [day, setDay] = useState<DayKey>("monday");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
@@ -80,6 +84,14 @@ export default function App() {
     setInteractionMode(mode);
     saveInteractionMode(mode);
   };
+
+  const loadRecipes = useCallback(async () => {
+    try {
+      setRecipes(await api.recipes());
+    } catch {
+      /* non-fatal */
+    }
+  }, []);
 
   const loadWeek = useCallback(async (id: string) => {
     const [w, c] = await Promise.all([api.week(id), api.completions(id)]);
@@ -105,6 +117,21 @@ export default function App() {
       }
     })();
   }, [loadWeek]);
+
+  useEffect(() => {
+    if (interactionMode !== "edit") return;
+    loadRecipes();
+  }, [interactionMode, loadRecipes]);
+
+  useEffect(() => {
+    if (interactionMode !== "edit") return;
+    const onFocus = () => {
+      loadRecipes();
+      if (weekId) loadWeek(weekId);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [interactionMode, loadRecipes, loadWeek, weekId]);
 
   useEffect(() => {
     if (!week || layoutMode !== "today") return;
@@ -298,6 +325,7 @@ export default function App() {
                               items={week.meals[d][slot] ?? []}
                               checked={checked}
                               isView={isView}
+                              recipes={recipes}
                               onToggle={(c) => toggleDone(d, slot, c)}
                               onChange={(items) => debouncedMeal(d, slot, items)}
                             />
@@ -317,6 +345,7 @@ export default function App() {
               weekId={weekId}
               done={done}
               isView={isView}
+              recipes={recipes}
               cellId={cellId}
               onToggle={(slot, c) => toggleDone(activeDay, slot, c)}
               onChange={(slot, items) => debouncedMeal(activeDay, slot, items)}

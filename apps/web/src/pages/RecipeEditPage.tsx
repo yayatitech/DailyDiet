@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getAdminKey, setAdminKey } from "../adminKey";
 import { api, Ingredient, RecipeDetail } from "../api";
 import RecipePageShell from "./RecipePageShell";
@@ -9,6 +9,7 @@ const emptyIngredient = (): Ingredient => ({ amount: "", item: "" });
 export default function RecipeEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isNew = !id || id === "new";
   const recipeId = isNew ? null : Number(id);
 
@@ -22,6 +23,12 @@ export default function RecipeEditPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isNew) return;
+    const preset = searchParams.get("name")?.trim();
+    if (preset) setName(preset);
+  }, [isNew, searchParams]);
 
   useEffect(() => {
     if (isNew || !Number.isFinite(recipeId)) return;
@@ -115,7 +122,7 @@ export default function RecipeEditPage() {
       <main className="recipe-page-body">
         <form className="recipe-form" onSubmit={handleSubmit}>
           <label className="control admin-key-control">
-            <span>Admin key</span>
+            <span className="label-required">Admin key</span>
             <input
               type="password"
               value={adminKey}
@@ -126,7 +133,7 @@ export default function RecipeEditPage() {
           </label>
 
           <label className="control">
-            <span>Name (matches meal plan)</span>
+            <span className="label-required">Name (matches meal plan)</span>
             <input value={name} onChange={(e) => setName(e.target.value)} required />
           </label>
 

@@ -110,6 +110,21 @@ export type RecipeInput = {
   external_url?: string | null;
 };
 
+function recipeRequestBody(body: RecipeInput | Partial<RecipeInput>): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  if (body.name !== undefined) payload.name = body.name;
+  if (body.display_name !== undefined) {
+    payload.display_name = body.display_name?.trim() || null;
+  }
+  if (body.ingredients !== undefined) payload.ingredients = body.ingredients;
+  if (body.instructions !== undefined) payload.instructions = body.instructions;
+  if (body.external_url !== undefined) {
+    const url = body.external_url?.trim();
+    if (url) payload.external_url = url;
+  }
+  return payload;
+}
+
 export function getToken(): string | null {
   return localStorage.getItem("dailyDiet.accessToken");
 }
@@ -188,13 +203,13 @@ export const api = {
     apiFetch<RecipeDetail>("/v1/admin/recipes", {
       method: "POST",
       headers: { "X-Admin-Key": adminKey },
-      body: JSON.stringify(body),
+      body: JSON.stringify(recipeRequestBody(body)),
     }),
   updateRecipe: (adminKey: string, id: number, body: Partial<RecipeInput>) =>
     apiFetch<RecipeDetail>(`/v1/admin/recipes/${id}`, {
       method: "PATCH",
       headers: { "X-Admin-Key": adminKey },
-      body: JSON.stringify(body),
+      body: JSON.stringify(recipeRequestBody(body)),
     }),
   uploadRecipeImage: (adminKey: string, id: number, file: File) => {
     const form = new FormData();
