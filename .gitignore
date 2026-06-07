@@ -12,3 +12,6 @@ apps/web/node_modules/
 apps/web/dist/
 apps/mobile/node_modules/
 .expo/
+scripts/recipe_loader/in/
+scripts/recipe_loader/out/
+scripts/recipe_loader/state/
