@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { getAdminKey } from "../adminKey";
 import { api, RecipeDetail } from "../api";
 import RecipePageShell from "./RecipePageShell";
+import RecipeInstructions from "../RecipeInstructions";
 
 export default function RecipeViewPage() {
   const { id } = useParams();
@@ -76,7 +77,7 @@ export default function RecipeViewPage() {
             {recipe.instructions && (
               <section>
                 <h2>Instructions</h2>
-                <p className="recipe-instructions">{recipe.instructions}</p>
+                <RecipeInstructions markdown={recipe.instructions} />
               </section>
             )}
             {!recipe.has_content && !recipe.external_url && (

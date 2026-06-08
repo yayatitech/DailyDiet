@@ -143,6 +143,19 @@ curl -X POST http://localhost:3000/v1/admin/recipes \
 
 Images: upload on `/recipes/:id/edit` or `POST /v1/admin/recipes/{id}/image` → stored in `public/recipes/`.
 
+### Recipe screenshot loader (external)
+
+Bulk-import recipes from mobile app screenshots via the admin API. Separate ops tool — not required to run the app.
+
+**Repo:** [dailydiet-recipe-loader](https://github.com/pingmepls/dailydiet-recipe-loader)
+
+```bash
+git clone https://github.com/pingmepls/dailydiet-recipe-loader.git
+cd dailydiet-recipe-loader && pip install -e .
+export ADMIN_KEY=dev-admin-key OPENAI_API_KEY=sk-...
+recipe-loader-watch --extractor llm --poll
+```
+
 ## Admin seed (after Excel change)
 
 ```bash

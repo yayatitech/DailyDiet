@@ -174,7 +174,12 @@ export default function RecipeEditPage() {
 
           <label className="control">
             <span>Instructions</span>
-            <textarea rows={6} value={instructions} onChange={(e) => setInstructions(e.target.value)} />
+            <textarea
+              rows={10}
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="Markdown: ### Section heading, then - bullet steps"
+            />
           </label>
 
           <label className="control">
