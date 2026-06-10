@@ -75,6 +75,23 @@ body {
   font-size: 0.9rem;
 }
 .guest-banner a { color: var(--accent); font-weight: 600; }
+.planner-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 18rem;
+}
+.state-panel {
+  width: 100%;
+  max-width: 28rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+}
+.state-panel h2 { margin: 0 0 0.4rem; font-size: 1.15rem; color: var(--accent); }
+.state-panel p { margin: 0; color: var(--muted); }
 .login-page-header { align-items: center; }
 .login-page { display: flex; justify-content: center; padding: 2rem 1rem; }
 .login-card {
@@ -304,7 +321,14 @@ body {
 .day-slot { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
 .day-slot-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600; }
 .day-slot-time { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
-.error { color: #b00020; padding: 1rem; }
+.error {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #f1b4bd;
+  border-radius: var(--radius);
+  background: #fff1f3;
+  color: #8f001a;
+}
 .control span.label-required::after {
   content: " *";
   color: #b00020;
@@ -313,5 +337,8 @@ body {
 
 @media (max-width: 768px) {
   .app-header { flex-direction: column; align-items: stretch; }
+  .app-header-top { align-items: stretch; }
+  .auth-nav { justify-content: flex-start; margin-left: 0; width: 100%; }
+  .auth-email { max-width: 100%; }
   .actions .btn { flex: 1; text-align: center; }
 }

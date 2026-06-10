@@ -79,6 +79,7 @@ export default function App() {
   const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
   const [day, setDay] = useState<DayKey>("monday");
   const [error, setError] = useState("");
+  const [loadingPlan, setLoadingPlan] = useState(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const canEdit = isLoggedIn;
@@ -110,6 +111,7 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
+        setLoadingPlan(true);
         const [wList, sList] = await Promise.all([api.weeks(), api.timeSlots()]);
         setWeeks(wList);
         setSlots(sList);
@@ -117,14 +119,21 @@ export default function App() {
         const initialId = initial?.id ?? wList[0]?.id ?? "";
         setWeekId(initialId);
         if (initialId) await loadWeek(initialId);
+        setError("");
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoadingPlan(false);
       }
     })();
   }, [loadWeek]);
 
   useEffect(() => {
-    if (weekId) loadWeek(weekId).catch((e) => setError(e instanceof Error ? e.message : String(e)));
+    if (weekId) {
+      loadWeek(weekId)
+        .then(() => setError(""))
+        .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+    }
   }, [isLoggedIn, weekId, loadWeek]);
 
   useEffect(() => {
@@ -152,6 +161,7 @@ export default function App() {
     setWeekId(id);
     try {
       await loadWeek(id);
+      setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -208,8 +218,6 @@ export default function App() {
   const activeDay = layoutMode === "today" ? (today ?? day) : day;
   const todayOutsideWeek = layoutMode === "today" && week && !today;
 
-  if (error && !week) return <p className="error">{error}</p>;
-
   return (
     <>
       <header className="app-header">
@@ -223,7 +231,7 @@ export default function App() {
         <div className="controls">
           <label className="control">
             <span>Week</span>
-            <select value={weekId} onChange={(e) => onWeekChange(e.target.value)}>
+            <select value={weekId} onChange={(e) => onWeekChange(e.target.value)} disabled={!weeks.length}>
               {weeks.map((w) => (
                 <option key={w.id} value={w.id}>{w.title}</option>
               ))}
@@ -290,8 +298,23 @@ export default function App() {
         </p>
       )}
 
-      {error && <p className="error">{error}</p>}
-      {week && (
+      {error && <p className="error" role="alert">{error}</p>}
+
+      {loadingPlan ? (
+        <main className="planner-state" aria-busy="true">
+          <div className="state-panel">
+            <h2>Loading meal plan</h2>
+            <p>Fetching weeks, time slots, and tracking.</p>
+          </div>
+        </main>
+      ) : !week && !error ? (
+        <main className="planner-state">
+          <div className="state-panel">
+            <h2>No meal plan weeks found</h2>
+            <p>Seed the default plan or import meal data to start tracking.</p>
+          </div>
+        </main>
+      ) : week ? (
         <main className={isView ? "" : "main-edit-mode"}>
           {layoutMode === "today" ? (
             <>
@@ -372,7 +395,7 @@ export default function App() {
             )}
           </section>
         </main>
-      )}
+      ) : null}
     </>
   );
 }

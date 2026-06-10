@@ -16,6 +16,13 @@ docker compose up -d
 # API: http://localhost:3000  (runs startup.py migrate on boot)
 ```
 
+Docker startup creates/migrates tables only. For a fresh database, seed the default meal plan and recipe catalog:
+
+```bash
+curl -X POST http://localhost:3000/v1/admin/seed \
+  -H "X-Admin-Key: dev-admin-key"
+```
+
 **Option A — local venv (WSL):**
 
 ```bash
@@ -39,6 +46,31 @@ npm run dev
 ```
 
 App: http://localhost:5173 (proxies `/v1` and `/static` to API)
+
+## Build and test
+
+Backend tests:
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+Web build and tests:
+
+```bash
+cd apps/web
+npm run build
+npm test
+```
+
+Mobile has Expo start scripts but no test/build script in `package.json`:
+
+```bash
+cd apps/mobile
+npm start
+```
 
 ### 3. Using the app
 
