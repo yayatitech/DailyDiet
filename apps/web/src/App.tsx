@@ -1,24 +1,28 @@
+import { Link } from "react-router-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "./auth";
 import {
   api,
   cellId,
-  clearTokens,
   completionSet,
   DAY_KEYS,
   DAY_LABELS,
   DayKey,
-  getToken,
+  formatTodayHeading,
   MealItem,
-  setTokens,
+  RecipeSummary,
   TimeSlot,
   todayDayKey,
+  weekForToday,
   WeekDetail,
   WeekSummary,
 } from "./api";
+import AppHeader from "./components/AppHeader";
+import DayMealsView, { todayProgress } from "./DayMealsView";
 import MealSlotEditor, { itemsToContent } from "./MealSlotEditor";
 import MealSlotViewer from "./MealSlotViewer";
 
-type LayoutMode = "week" | "day";
+type LayoutMode = "today" | "week" | "day";
 type InteractionMode = "view" | "edit";
 
 const INTERACTION_MODE_KEY = "dailyDiet.interactionMode";
@@ -36,16 +40,23 @@ function MealSlotCell({
   items,
   checked,
   isView,
+  showTracking,
+  recipes,
   onToggle,
   onChange,
 }: {
   items: MealItem[];
   checked: boolean;
   isView: boolean;
+  showTracking: boolean;
+  recipes: RecipeSummary[];
   onToggle: (checked: boolean) => void;
   onChange: (items: MealItem[]) => void;
 }) {
   if (isView) {
+    if (!showTracking) {
+      return <MealSlotViewer items={items} />;
+    }
     return (
       <label className="cell-label">
         <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => onToggle(e.target.checked)} />
@@ -53,62 +64,119 @@ function MealSlotCell({
       </label>
     );
   }
-  return <MealSlotEditor items={items} onChange={onChange} />;
+  return <MealSlotEditor items={items} recipes={recipes} onChange={onChange} />;
 }
 
 export default function App() {
+  const { isLoggedIn } = useAuth();
   const [weeks, setWeeks] = useState<WeekSummary[]>([]);
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [weekId, setWeekId] = useState("");
   const [week, setWeek] = useState<WeekDetail | null>(null);
   const [done, setDone] = useState<Set<string>>(new Set());
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>("week");
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>("today");
   const [interactionMode, setInteractionMode] = useState<InteractionMode>(loadInteractionMode);
+  const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
   const [day, setDay] = useState<DayKey>("monday");
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loadingPlan, setLoadingPlan] = useState(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isView = interactionMode === "view";
+  const canEdit = isLoggedIn;
+  const isView = !canEdit || interactionMode === "view";
 
   const setMode = (mode: InteractionMode) => {
+    if (!canEdit) return;
     setInteractionMode(mode);
     saveInteractionMode(mode);
   };
+
+  const loadRecipes = useCallback(async () => {
+    try {
+      setRecipes(await api.recipes());
+    } catch {
+      /* non-fatal */
+    }
+  }, []);
 
   const loadWeek = useCallback(async (id: string) => {
     const [w, c] = await Promise.all([api.week(id), api.completions(id)]);
     setWeek(w);
     setDone(completionSet(id, c));
+    const today = todayDayKey(w);
+    if (today) setDay(today);
+    return w;
   }, []);
 
   useEffect(() => {
     (async () => {
       try {
+        setLoadingPlan(true);
         const [wList, sList] = await Promise.all([api.weeks(), api.timeSlots()]);
         setWeeks(wList);
         setSlots(sList);
-        const first = wList[0]?.id ?? "";
-        setWeekId(first);
-        if (first) await loadWeek(first);
+        const initial = weekForToday(wList);
+        const initialId = initial?.id ?? wList[0]?.id ?? "";
+        setWeekId(initialId);
+        if (initialId) await loadWeek(initialId);
+        setError("");
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoadingPlan(false);
       }
     })();
   }, [loadWeek]);
+
+  useEffect(() => {
+    if (weekId) {
+      loadWeek(weekId)
+        .then(() => setError(""))
+        .catch((e) => setError(e instanceof Error ? e.message : String(e)));
+    }
+  }, [isLoggedIn, weekId, loadWeek]);
+
+  useEffect(() => {
+    if (!canEdit || interactionMode !== "edit") return;
+    loadRecipes();
+  }, [canEdit, interactionMode, loadRecipes]);
+
+  useEffect(() => {
+    if (!canEdit || interactionMode !== "edit") return;
+    const onFocus = () => {
+      loadRecipes();
+      if (weekId) loadWeek(weekId);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [canEdit, interactionMode, loadRecipes, loadWeek, weekId]);
+
+  useEffect(() => {
+    if (!week || layoutMode !== "today") return;
+    const today = todayDayKey(week);
+    if (today) setDay(today);
+  }, [week, layoutMode]);
 
   const onWeekChange = async (id: string) => {
     setWeekId(id);
     try {
       await loadWeek(id);
+      setError("");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
   };
 
+  const selectTodayLayout = () => {
+    setLayoutMode("today");
+    if (week) {
+      const today = todayDayKey(week);
+      if (today) setDay(today);
+    }
+  };
+
   const debouncedMeal = (d: DayKey, slot: number, items: MealItem[]) => {
-    if (!week) return;
+    if (!week || !canEdit) return;
     setWeek({
       ...week,
       meals: {
@@ -124,7 +192,7 @@ export default function App() {
   };
 
   const debouncedNotes = (notes: string) => {
-    if (!week) return;
+    if (!week || !canEdit) return;
     setWeek({ ...week, notes });
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
@@ -133,6 +201,7 @@ export default function App() {
   };
 
   const toggleDone = async (d: DayKey, slot: number, checked: boolean) => {
+    if (!canEdit) return;
     const id = cellId(weekId, d, slot);
     const next = new Set(done);
     if (checked) next.add(id);
@@ -146,33 +215,39 @@ export default function App() {
   };
 
   const today = week ? todayDayKey(week) : null;
-
-  if (error && !week) return <p className="error">{error}</p>;
+  const activeDay = layoutMode === "today" ? (today ?? day) : day;
+  const todayOutsideWeek = layoutMode === "today" && week && !today;
 
   return (
     <>
       <header className="app-header">
-        <div className="brand">
-          <h1>DailyDiet</h1>
-          <p className="subtitle">Weekly Meal Plan · v2</p>
+        <div className="app-header-top">
+          <div className="brand">
+            <h1>DailyDiet</h1>
+            <p className="subtitle">Weekly Meal Plan · v2</p>
+          </div>
+          <AppHeader />
         </div>
         <div className="controls">
           <label className="control">
             <span>Week</span>
-            <select value={weekId} onChange={(e) => onWeekChange(e.target.value)}>
+            <select value={weekId} onChange={(e) => onWeekChange(e.target.value)} disabled={!weeks.length}>
               {weeks.map((w) => (
                 <option key={w.id} value={w.id}>{w.title}</option>
               ))}
             </select>
           </label>
           <div className="view-toggle">
+            <button type="button" className={`view-btn ${layoutMode === "today" ? "active" : ""}`} onClick={selectTodayLayout}>Today</button>
             <button type="button" className={`view-btn ${layoutMode === "week" ? "active" : ""}`} onClick={() => setLayoutMode("week")}>Week grid</button>
             <button type="button" className={`view-btn ${layoutMode === "day" ? "active" : ""}`} onClick={() => setLayoutMode("day")}>Day view</button>
           </div>
-          <div className="view-toggle">
-            <button type="button" className={`view-btn ${interactionMode === "view" ? "active" : ""}`} onClick={() => setMode("view")}>View</button>
-            <button type="button" className={`view-btn ${interactionMode === "edit" ? "active" : ""}`} onClick={() => setMode("edit")}>Edit</button>
-          </div>
+          {canEdit && (
+            <div className="view-toggle">
+              <button type="button" className={`view-btn ${interactionMode === "view" ? "active" : ""}`} onClick={() => setMode("view")}>View</button>
+              <button type="button" className={`view-btn ${interactionMode === "edit" ? "active" : ""}`} onClick={() => setMode("edit")}>Edit</button>
+            </div>
+          )}
           <label className={`control ${layoutMode === "day" ? "" : "hidden"}`}>
             <span>Day</span>
             <select value={day} onChange={(e) => setDay(e.target.value as DayKey)}>
@@ -183,55 +258,78 @@ export default function App() {
           </label>
         </div>
         <div className="actions">
-          {!isView && (
+          {canEdit && !isView && (
             <>
               <button type="button" className="btn secondary" onClick={async () => { await api.resetWeek(weekId); await loadWeek(weekId); }}>Reset week</button>
               <button type="button" className="btn secondary" onClick={async () => { await api.clearCompletions(); setDone(new Set()); }}>Reset tracking</button>
+              <Link to="/recipes" className="btn secondary">Recipes</Link>
             </>
           )}
-          <button type="button" className="btn" onClick={async () => {
-            const b = await api.export();
-            const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `dailydiet-${new Date().toISOString().slice(0, 10)}.json`;
-            a.click();
-          }}>Export JSON</button>
-          {!isView && (
-            <label className="btn secondary import-label">
-              Import JSON
-              <input type="file" accept="application/json" hidden onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                const text = await f.text();
-                await api.import(JSON.parse(text));
-                await loadWeek(weekId);
-              }} />
-            </label>
+          {canEdit && (
+            <>
+              <button type="button" className="btn" onClick={async () => {
+                const b = await api.export();
+                const blob = new Blob([JSON.stringify(b, null, 2)], { type: "application/json" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = `dailydiet-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+              }}>Export JSON</button>
+              {!isView && (
+                <label className="btn secondary import-label">
+                  Import JSON
+                  <input type="file" accept="application/json" hidden onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const text = await f.text();
+                    await api.import(JSON.parse(text));
+                    await loadWeek(weekId);
+                  }} />
+                </label>
+              )}
+            </>
           )}
         </div>
       </header>
 
-      <div className="auth-panel">
-        <label className="control"><span>Email</span><input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="optional login" /></label>
-        <label className="control"><span>Password</span><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
-        <button type="button" className="btn secondary" onClick={async () => {
-          const t = await api.login(email, password);
-          setTokens(t.access_token, t.refresh_token);
-          await loadWeek(weekId);
-        }}>Login</button>
-        <button type="button" className="btn secondary" onClick={async () => {
-          const t = await api.register(email, password);
-          setTokens(t.access_token, t.refresh_token);
-          await loadWeek(weekId);
-        }}>Register</button>
-        {getToken() && <button type="button" className="btn secondary" onClick={() => { clearTokens(); }}>Logout</button>}
-      </div>
+      {!isLoggedIn && (
+        <p className="guest-banner">
+          Browsing template plan — <Link to="/login">Sign in</Link> to save meals and tracking.
+        </p>
+      )}
 
-      {error && <p className="error">{error}</p>}
-      {week && (
+      {error && <p className="error" role="alert">{error}</p>}
+
+      {loadingPlan ? (
+        <main className="planner-state" aria-busy="true">
+          <div className="state-panel">
+            <h2>Loading meal plan</h2>
+            <p>Fetching weeks, time slots, and tracking.</p>
+          </div>
+        </main>
+      ) : !week && !error ? (
+        <main className="planner-state">
+          <div className="state-panel">
+            <h2>No meal plan weeks found</h2>
+            <p>Seed the default plan or import meal data to start tracking.</p>
+          </div>
+        </main>
+      ) : week ? (
         <main className={isView ? "" : "main-edit-mode"}>
-          <h2 className="week-title">{week.title}</h2>
+          {layoutMode === "today" ? (
+            <>
+              <h2 className="week-title today-heading">{formatTodayHeading(today)}</h2>
+              <p className="today-meta">{week.title}</p>
+              {todayOutsideWeek ? (
+                <p className="today-warning">Today is not in this week&apos;s date range. Select another week or use Day view.</p>
+              ) : isLoggedIn ? (
+                <p className="today-progress">{todayProgress(done, weekId, activeDay, cellId)}/8 meals done</p>
+              ) : null}
+            </>
+          ) : (
+            <h2 className="week-title">{week.title}</h2>
+          )}
+
           {layoutMode === "week" ? (
             <div className="grid-wrap">
               <table className="meal-grid">
@@ -259,6 +357,8 @@ export default function App() {
                               items={week.meals[d][slot] ?? []}
                               checked={checked}
                               isView={isView}
+                              showTracking={isLoggedIn}
+                              recipes={recipes}
                               onToggle={(c) => toggleDone(d, slot, c)}
                               onChange={(items) => debouncedMeal(d, slot, items)}
                             />
@@ -271,28 +371,21 @@ export default function App() {
               </table>
             </div>
           ) : (
-            <div className="day-view">
-              {Array.from({ length: 8 }, (_, slot) => {
-                const cid = cellId(weekId, day, slot);
-                const checked = done.has(cid);
-                return (
-                  <article key={slot} className={`day-slot${checked ? " cell-done" : ""}`}>
-                    <header className="day-slot-header">
-                      <span>{slots[slot]?.label ?? `Meal ${slot + 1}`}</span>
-                      <span className="day-slot-time">{slots[slot]?.time ?? ""}</span>
-                    </header>
-                    <MealSlotCell
-                      items={week.meals[day][slot] ?? []}
-                      checked={checked}
-                      isView={isView}
-                      onToggle={(c) => toggleDone(day, slot, c)}
-                      onChange={(items) => debouncedMeal(day, slot, items)}
-                    />
-                  </article>
-                );
-              })}
-            </div>
+            <DayMealsView
+              day={activeDay}
+              weekMeals={week.meals[activeDay] ?? []}
+              slots={slots}
+              weekId={weekId}
+              done={done}
+              isView={isView}
+              showTracking={isLoggedIn}
+              recipes={recipes}
+              cellId={cellId}
+              onToggle={(slot, c) => toggleDone(activeDay, slot, c)}
+              onChange={(slot, items) => debouncedMeal(activeDay, slot, items)}
+            />
           )}
+
           <section className="notes-section">
             <label htmlFor="week-notes">Notes</label>
             {isView ? (
@@ -302,7 +395,7 @@ export default function App() {
             )}
           </section>
         </main>
-      )}
+      ) : null}
     </>
   );
 }

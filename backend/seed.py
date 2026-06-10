@@ -37,20 +37,30 @@ def seed_recipe_catalog(db: Session) -> None:
         return
     entries = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
     db.query(RecipeCatalogEntry).delete()
+    count = 0
     for item in entries:
         name = item.get("name", "").strip()
-        url = item.get("recipe_url", "").strip()
-        if not name or not url:
+        if not name:
+            continue
+        external_url = (item.get("external_url") or item.get("recipe_url") or "").strip() or None
+        display_name = (item.get("display_name") or "").strip() or None
+        ingredients = item.get("ingredients") or []
+        instructions = (item.get("instructions") or "").strip()
+        if not external_url and not ingredients and not instructions:
             continue
         db.add(
             RecipeCatalogEntry(
                 name=name,
                 name_key=normalize_meal_name(name),
-                recipe_url=url,
+                display_name=display_name,
+                ingredients=ingredients,
+                instructions=instructions,
+                external_url=external_url,
             )
         )
+        count += 1
     db.commit()
-    print(f"Seeded {len(entries)} recipe catalog entries from {CATALOG_PATH}")
+    print(f"Seeded {count} recipe catalog entries from {CATALOG_PATH}")
 
 
 def run_seed(db: Session | None = None) -> None:

@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import AliasChoices, BaseModel, EmailStr, Field
 
 DayKey = Literal[
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
@@ -23,7 +23,9 @@ class TimeSlotOut(BaseModel):
 
 class MealItemOut(BaseModel):
     text: str
+    recipe_id: int | None = None
     recipe_url: str | None = None
+    recipe_external: bool = False
 
 
 class WeekSummary(BaseModel):
@@ -95,19 +97,63 @@ class RefreshIn(BaseModel):
     refresh_token: str
 
 
+class IngredientIn(BaseModel):
+    amount: str = ""
+    item: str = Field(min_length=1, max_length=255)
+
+
+class IngredientOut(BaseModel):
+    amount: str = ""
+    item: str
+
+
+class RecipeSummary(BaseModel):
+    id: int
+    name: str
+    display_name: str | None = None
+    has_image: bool = False
+    has_content: bool = False
+
+    model_config = {"from_attributes": True}
+
+
 class RecipeOut(BaseModel):
     id: int
     name: str
-    recipe_url: str
+    name_key: str
+    display_name: str | None = None
+    ingredients: list[IngredientOut] = Field(default_factory=list)
+    instructions: str = ""
+    image_url: str | None = None
+    external_url: str | None = None
+    has_content: bool = False
+    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
 
 class RecipeCreate(BaseModel):
+    model_config = {"populate_by_name": True}
+
     name: str = Field(min_length=1, max_length=255)
-    recipe_url: str = Field(min_length=1, max_length=2048)
+    display_name: str | None = Field(default=None, max_length=255)
+    ingredients: list[IngredientIn] = Field(default_factory=list)
+    instructions: str = ""
+    external_url: str | None = Field(
+        default=None,
+        max_length=2048,
+        validation_alias=AliasChoices("external_url", "recipe_url"),
+    )
 
 
 class RecipeUpdate(BaseModel):
+    model_config = {"populate_by_name": True}
     name: str | None = Field(default=None, min_length=1, max_length=255)
-    recipe_url: str | None = Field(default=None, min_length=1, max_length=2048)
+    display_name: str | None = Field(default=None, max_length=255)
+    ingredients: list[IngredientIn] | None = None
+    instructions: str | None = None
+    external_url: str | None = Field(
+        default=None,
+        max_length=2048,
+        validation_alias=AliasChoices("external_url", "recipe_url"),
+    )

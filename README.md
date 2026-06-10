@@ -4,42 +4,40 @@ Weekly meal tracker with **Python FastAPI** backend, **PostgreSQL**, **React** w
 
 | Doc | Purpose |
 |-----|---------|
-| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional & non-functional requirements |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, API, database |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional & non-functional requirements (FR-01–37) |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, API, auth, recipes, web routes |
 
 ## Quick start
 
-### 1. Database
+### 1. Database + API
 
 ```bash
 docker compose up -d
+# API: http://localhost:3000  (runs startup.py migrate on boot)
 ```
 
-### 2. Backend (Python)
-
-**Option A — local venv (recommended on WSL):**
+Docker startup creates/migrates tables only. For a fresh database, seed the default meal plan and recipe catalog:
 
 ```bash
-sudo apt install python3.12-venv python3-pip   # once
+curl -X POST http://localhost:3000/v1/admin/seed \
+  -H "X-Admin-Key: dev-admin-key"
+```
+
+**Option A — local venv (WSL):**
+
+```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-python init_db.py
+python init_db.py          # first time: full seed
 uvicorn app.main:app --reload --port 3000
 ```
 
-**Option B — Docker (API + Postgres):**
+**First-time or reset seed:** `python init_db.py`  
+**Schema migrate only:** `python startup.py` or `python migrate_recipe_catalog.py`
 
-```bash
-docker compose up -d
-# API at http://localhost:3000 after build completes
-```
-
-API: http://localhost:3000/docs
-
-### 3. Web client (React)
+### 2. Web client (React — not in Docker)
 
 ```bash
 cd apps/web
@@ -47,9 +45,105 @@ npm install
 npm run dev
 ```
 
-App: http://localhost:5173 (proxies API)
+App: http://localhost:5173 (proxies `/v1` and `/static` to API)
 
-### Admin seed (after Excel change)
+## Build and test
+
+Backend tests:
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+Web build and tests:
+
+```bash
+cd apps/web
+npm run build
+npm test
+```
+
+Mobile has Expo start scripts but no test/build script in `package.json`:
+
+```bash
+cd apps/mobile
+npm start
+```
+
+### 3. Using the app
+
+| Role | What you get |
+|------|----------------|
+| **Guest** (no login) | Browse template meal plan (Today / Week / Day), recipe view links |
+| **Logged in** | Personal meal edits, checkboxes, notes, import/export, Edit mode |
+| **Recipe admin** | `/recipes` pages + `X-Admin-Key` (`dev-admin-key` locally) |
+
+**Sign in:** top-right **Log in** / **Sign up**, or `/login`
+
+## Web pages
+
+| URL | Purpose |
+|-----|---------|
+| `/` | Meal planner |
+| `/login` | Login & register |
+| `/recipes` | Recipe list (admin) |
+| `/recipes/new` | Create recipe |
+| `/recipes/:id` | View recipe (ingredients, steps, photo) |
+| `/recipes/:id/edit` | Edit recipe + upload image |
+
+## Features (v2.6)
+
+- **Today dashboard** — auto-select week containing today; progress when logged in
+- **View / Edit modes** — View = checkboxes + read-only; Edit = editable meals + Recipes link
+- **Rich recipes** — PostgreSQL storage; hybrid meal links (internal page or external URL)
+- **Recipe combobox** — pick catalog recipe in Edit mode; shortcut to create new recipe
+- **Guest mode** — anonymous users see template plan only; login unlocks personal data
+- **Auth header** — Log in / Sign up top-right on all pages
+
+See [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) for FR-01–37.
+
+## Auth
+
+**Default:** no JWT → guest (read-only template). Mutations return **401** until logged in.
+
+```bash
+# Register / login via UI at /login, or:
+curl -X POST http://localhost:3000/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"yourpassword"}'
+```
+
+Send `Authorization: Bearer <access_token>` on authenticated requests (web stores tokens in `localStorage`).
+
+**Optional dev flag** (legacy shared dev-user when no JWT):
+
+```bash
+# backend/.env or docker-compose api environment
+ALLOW_ANONYMOUS_DEV_USER=true
+```
+
+## Recipe catalog
+
+Recipes live in PostgreSQL (`recipe_catalog` table). Seed input: [`public/data/recipe-catalog.json`](public/data/recipe-catalog.json).
+
+Meal items link by **normalized name** (case/spacing insensitive). Edit mode uses a **combobox** to pick recipes or create new ones.
+
+```bash
+# List
+curl http://localhost:3000/v1/recipes
+
+# Create (admin)
+curl -X POST http://localhost:3000/v1/admin/recipes \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-Key: dev-admin-key" \
+  -d '{"name":"Mint Chutney","ingredients":[{"amount":"1 cup","item":"mint"}],"instructions":"Blend."}'
+```
+
+Images: upload on `/recipes/:id/edit` or `POST /v1/admin/recipes/{id}/image` → stored in `public/recipes/`.
+
+## Admin seed (after Excel change)
 
 ```bash
 python scripts/import_xlsm.py
@@ -57,38 +151,18 @@ cd backend && python init_db.py
 # or: curl -X POST http://localhost:3000/v1/admin/seed?run_import=true -H "X-Admin-Key: dev-admin-key"
 ```
 
-### Recipe catalog
-
-Meal slots are split on newlines into individual items. Recipe URLs come from a shared catalog in [`public/data/recipe-catalog.json`](public/data/recipe-catalog.json), loaded on seed.
-
-```bash
-# List catalog
-curl http://localhost:3000/v1/recipes
-
-# Add entry (admin)
-curl -X POST http://localhost:3000/v1/admin/recipes \
-  -H "Content-Type: application/json" \
-  -H "X-Admin-Key: dev-admin-key" \
-  -d '{"name":"Mint Chutney","recipe_url":"https://example.com/mint-chutney"}'
-```
-
-After editing `recipe-catalog.json`, re-run `python init_db.py` or the admin seed endpoint.
-
 ## Project layout
 
 ```
-backend/          FastAPI + SQLAlchemy
-apps/web/         React web client
+backend/          FastAPI + SQLAlchemy (startup.py, init_db.py, migrate_recipe_catalog.py)
+apps/web/         React + Vite + React Router (npm run dev)
 apps/mobile/      Expo scaffold (Phase 3)
-public/data/      Seed JSON for DB import (meal plan + recipe catalog)
-docs/             Requirements & architecture
-scripts/          Excel import (Python stdlib)
+public/data/      Seed JSON (meal plan + recipe catalog)
+public/recipes/   Uploaded recipe images
+docs/             REQUIREMENTS.md, ARCHITECTURE.md
+scripts/          Excel import
+docker-compose.yml  postgres + api only
 ```
-
-## Auth
-
-- **Dev mode:** no token → default dev user (`dev@dailydiet.local`)
-- **Production:** register/login via `/v1/auth/*`, send `Authorization: Bearer <token>`
 
 ## Mobile
 

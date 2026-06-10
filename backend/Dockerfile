@@ -14,4 +14,4 @@ WORKDIR /app/backend
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "python init_db.py && uvicorn app.main:app --host 0.0.0.0 --port 3000"]
+CMD ["sh", "-c", "python startup.py && uvicorn app.main:app --host 0.0.0.0 --port 3000"]

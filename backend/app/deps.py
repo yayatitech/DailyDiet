@@ -11,6 +11,7 @@ from app.config import settings
 from app.database import get_db
 from app.meals import enrich_items, join_slot_content
 from app.models import DAY_KEYS, MealCompletion, RecipeCatalogEntry, TemplateWeek, User, UserMealOverride, UserWeekNotes
+from app.recipe_utils import recipe_lookup_from_entry
 from app.schemas import MealItemOut, WeekDetail
 
 security = HTTPBearer(auto_error=False)
@@ -54,7 +55,23 @@ def get_or_create_dev_user(db: Session) -> User:
     return user
 
 
-def get_current_user(
+def get_optional_user(
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+) -> User | None:
+    if credentials:
+        user_id = user_id_from_token(credentials.credentials, "access")
+        if user_id:
+            user = db.get(User, user_id)
+            if user:
+                return user
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    if settings.allow_anonymous_dev_user:
+        return get_or_create_dev_user(db)
+    return None
+
+
+def get_required_user(
     db: Session = Depends(get_db),
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> User:
@@ -65,7 +82,14 @@ def get_current_user(
             if user:
                 return user
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return get_or_create_dev_user(db)
+    if settings.allow_anonymous_dev_user:
+        return get_or_create_dev_user(db)
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
+
+
+def get_current_user(user: User = Depends(get_required_user)) -> User:
+    """Backward-compatible alias for endpoints that require auth."""
+    return user
 
 
 def require_admin(x_admin_key: str | None = Header(default=None)) -> None:
@@ -80,28 +104,32 @@ def get_week_by_key(db: Session, week_key: str) -> TemplateWeek:
     return week
 
 
-def get_recipe_catalog_map(db: Session) -> dict[str, str]:
-    rows = db.query(RecipeCatalogEntry.name_key, RecipeCatalogEntry.recipe_url).all()
-    return {name_key: url for name_key, url in rows}
+def get_recipe_catalog_map(db: Session):
+    rows = db.query(RecipeCatalogEntry).all()
+    return {entry.name_key: recipe_lookup_from_entry(entry) for entry in rows}
 
 
-def build_week_detail(db: Session, week: TemplateWeek, user: User) -> WeekDetail:
+def build_week_detail(db: Session, week: TemplateWeek, user: User | None) -> WeekDetail:
     catalog = get_recipe_catalog_map(db)
     template_meals = {
         (m.day_of_week, m.slot_index): m.content for m in week.meals
     }
-    overrides = {
-        (o.day_of_week, o.slot_index): o.content
-        for o in db.query(UserMealOverride)
-        .filter(UserMealOverride.user_id == user.id, UserMealOverride.week_id == week.id)
-        .all()
-    }
-    notes_row = (
-        db.query(UserWeekNotes)
-        .filter(UserWeekNotes.user_id == user.id, UserWeekNotes.week_id == week.id)
-        .first()
-    )
-    notes = notes_row.notes if notes_row else week.notes
+    if user is None:
+        overrides: dict[tuple[int, int], str] = {}
+        notes = week.notes
+    else:
+        overrides = {
+            (o.day_of_week, o.slot_index): o.content
+            for o in db.query(UserMealOverride)
+            .filter(UserMealOverride.user_id == user.id, UserMealOverride.week_id == week.id)
+            .all()
+        }
+        notes_row = (
+            db.query(UserWeekNotes)
+            .filter(UserWeekNotes.user_id == user.id, UserWeekNotes.week_id == week.id)
+            .first()
+        )
+        notes = notes_row.notes if notes_row else week.notes
 
     meals: dict[str, list[list[MealItemOut]]] = {}
     for day_idx, day_key in enumerate(DAY_KEYS):

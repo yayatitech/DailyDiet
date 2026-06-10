@@ -1,10 +1,23 @@
 [
   {
     "name": "Paneer Patty/Puff",
-    "recipe_url": "https://example.com/recipes/paneer-patty-puff"
+    "display_name": "Paneer Patty or Puff",
+    "external_url": "https://example.com/recipes/paneer-patty-puff",
+    "ingredients": [
+      { "amount": "200 g", "item": "paneer, grated" },
+      { "amount": "1 cup", "item": "whole wheat flour" }
+    ],
+    "instructions": "Mix paneer with flour and spices. Shape into patties and bake at 180°C for 20 minutes."
   },
   {
     "name": "Mint Chutney",
-    "recipe_url": "https://example.com/recipes/mint-chutney"
+    "display_name": "Fresh Mint Chutney",
+    "external_url": "https://example.com/recipes/mint-chutney",
+    "ingredients": [
+      { "amount": "1 cup", "item": "fresh mint leaves" },
+      { "amount": "2 tbsp", "item": "lemon juice" },
+      { "amount": "1", "item": "green chili" }
+    ],
+    "instructions": "Blend all ingredients until smooth. Adjust salt and lemon to taste."
   }
 ]

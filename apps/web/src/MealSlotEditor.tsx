@@ -1,12 +1,14 @@
-import { MealItem } from "./api";
+import { MealItem, RecipeSummary } from "./api";
+import RecipeCombobox from "./RecipeCombobox";
 import RecipeLink from "./RecipeLink";
 
 type Props = {
   items: MealItem[];
+  recipes: RecipeSummary[];
   onChange: (items: MealItem[]) => void;
 };
 
-export default function MealSlotEditor({ items, onChange }: Props) {
+export default function MealSlotEditor({ items, recipes, onChange }: Props) {
   const rows = items.length ? items : [{ text: "", recipe_url: null }];
 
   const updateItem = (index: number, text: string) => {
@@ -27,13 +29,15 @@ export default function MealSlotEditor({ items, onChange }: Props) {
     <div className="meal-items">
       {rows.map((item, index) => (
         <div key={index} className="meal-item-row">
-          <RecipeLink text={item.text} recipeUrl={item.recipe_url} />
-          <input
-            type="text"
-            className="meal-item-input"
+          <RecipeLink
+            text={item.text}
+            recipeUrl={item.recipe_url}
+            recipeExternal={item.recipe_external}
+          />
+          <RecipeCombobox
+            recipes={recipes}
             value={item.text}
-            onChange={(e) => updateItem(index, e.target.value)}
-            placeholder="Meal item"
+            onChange={(text) => updateItem(index, text)}
           />
           <button
             type="button"

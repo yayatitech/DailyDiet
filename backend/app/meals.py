@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from app.recipe_utils import RecipeLookup, resolve_meal_recipe_link
 from app.schemas import MealItemOut
 
 _WHITESPACE = re.compile(r"\s+")
@@ -23,14 +24,23 @@ def join_slot_content(items: list[MealItemOut]) -> str:
     return "\n".join(item.text for item in items if item.text.strip())
 
 
-def enrich_items(content: str, catalog: dict[str, str]) -> list[MealItemOut]:
+def enrich_items(content: str, catalog: dict[str, RecipeLookup]) -> list[MealItemOut]:
     lines = split_slot_content(content)
     if not lines:
         return []
-    return [
-        MealItemOut(
-            text=line,
-            recipe_url=catalog.get(normalize_meal_name(line)),
+    items: list[MealItemOut] = []
+    for line in lines:
+        lookup = catalog.get(normalize_meal_name(line))
+        if not lookup:
+            items.append(MealItemOut(text=line))
+            continue
+        recipe_id, recipe_url, recipe_external = resolve_meal_recipe_link(lookup)
+        items.append(
+            MealItemOut(
+                text=line,
+                recipe_id=recipe_id,
+                recipe_url=recipe_url,
+                recipe_external=recipe_external,
+            )
         )
-        for line in lines
-    ]
+    return items
