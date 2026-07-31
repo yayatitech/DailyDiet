@@ -296,6 +296,7 @@ When adding features, update these files together:
 | New FR / behavior | `docs/REQUIREMENTS.md` — add FR row, traceability row, revision history |
 | API / auth / routes | `docs/ARCHITECTURE.md` — REST table, web routes, diagrams |
 | Dev setup / quick start | `README.md` |
+| Session progress / where you left off | `docs/work_in_progress.md` |
 | Mobile-only | `apps/mobile/README.md` |
 
 **Current version:** REQUIREMENTS 2.6 (FR-01–37). Key v2.6 additions: rich recipes (FR-30–34), recipe combobox (FR-35), auth page + guest mode (FR-36–37).

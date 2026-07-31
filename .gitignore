@@ -8,7 +8,10 @@ __pycache__/
 .venv/
 venv/
 backend/.env
+.env.prod
 apps/web/node_modules/
 apps/web/dist/
 apps/mobile/node_modules/
 .expo/
+simple_weekly_meal_plan_extendable.xlsm.bak
+backend/public/recipes/*.jpg

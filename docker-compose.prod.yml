@@ -1,0 +1,40 @@
+# Production stack: Postgres + API (bound to localhost for nginx).
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dailydiet-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dailydiet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-dailydiet}
+    volumes:
+      - dailydiet_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: dailydiet-api
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dailydiet}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-dailydiet}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./public/recipes:/app/public/recipes
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  dailydiet_pg:

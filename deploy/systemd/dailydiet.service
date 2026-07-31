@@ -1,0 +1,23 @@
+# Install (edit WorkingDirectory / User first):
+#   sudo cp deploy/systemd/dailydiet.service /etc/systemd/system/dailydiet.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now dailydiet
+
+[Unit]
+Description=DailyDiet (Docker Compose)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=YOUR_USER
+Group=docker
+WorkingDirectory=/home/YOUR_USER/DailyDiet
+ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml --env-file .env.prod down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

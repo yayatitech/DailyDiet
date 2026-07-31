@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminKey, setAdminKey } from "../adminKey";
 import { api, RecipeSummary } from "../api";
+import { normalizeMealName } from "../RecipeCombobox";
 import RecipePageShell from "./RecipePageShell";
 
 export default function RecipeListPage() {
   const [adminKey, setAdminKeyState] = useState(getAdminKey);
   const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
+  const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,6 +24,18 @@ export default function RecipeListPage() {
   useEffect(() => {
     loadRecipes();
   }, [loadRecipes]);
+
+  const filtered = useMemo(() => {
+    const q = normalizeMealName(search);
+    if (!q) return recipes;
+    return recipes.filter((r) => {
+      const label = r.display_name || r.name;
+      return (
+        normalizeMealName(r.name).includes(q) ||
+        normalizeMealName(label).includes(q)
+      );
+    });
+  }, [recipes, search]);
 
   const saveKey = (key: string) => {
     setAdminKeyState(key);
@@ -60,6 +74,17 @@ export default function RecipeListPage() {
           Manage full recipe content. Meal names must match meal-plan item text for automatic linking.
         </p>
 
+        <label className="control recipe-search">
+          <span>Search recipes</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Filter by name…"
+            autoComplete="off"
+          />
+        </label>
+
         <label className="control admin-key-control">
           <span className="label-required">Admin key</span>
           <input
@@ -74,7 +99,7 @@ export default function RecipeListPage() {
         {error && <p className="error">{error}</p>}
 
         <ul className="recipe-admin-list">
-          {recipes.map((r) => (
+          {filtered.map((r) => (
             <li key={r.id} className="recipe-admin-item">
               <div className="recipe-admin-main">
                 <strong>{r.display_name || r.name}</strong>
@@ -105,6 +130,9 @@ export default function RecipeListPage() {
             </li>
           ))}
           {!recipes.length && <li className="recipe-list-empty">No recipes yet.</li>}
+          {!!recipes.length && !filtered.length && (
+            <li className="recipe-list-empty">No recipes match your search.</li>
+          )}
         </ul>
       </main>
     </>
