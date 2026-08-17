@@ -1,0 +1,15 @@
+{
+  "Wheat_Upama": {
+    "status": "pushed",
+    "updated_at": "2026-06-07T23:11:38+00:00",
+    "name_key": "wheat upama",
+    "recipe_id": 14,
+    "file_hashes": [
+      "068496905557ba1fe40be9fb25f159289a1429aefd9305b30aa6aac29eaedd49",
+      "5f819e8b20a58943648611b750bb447d0035dfc0c0482f5a5f4a8cb1517c2096",
+      "4b426d530ebd214e2ec96ac372e39808205421f581bd43e023ea1cd3068a90b6"
+    ],
+    "extractor": "llm",
+    "pushed_at": "2026-06-07T23:11:38+00:00"
+  }
+}
