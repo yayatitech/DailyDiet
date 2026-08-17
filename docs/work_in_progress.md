@@ -1,6 +1,6 @@
 # DailyDiet — Work in Progress
 
-**Last updated:** 2026-07-21  
+**Last updated:** 2026-08-16  
 **Project:** DailyDiet v2 — `/home/pingmepls/projects/DailyDiet`  
 **Requirements version:** 2.6 (FR-01–37)
 
@@ -25,7 +25,7 @@ Living log of what has been built, what was done recently, and what is next. Upd
 | **Recipes** | Rich pages, images, hybrid links, Edit-mode combobox, list name search |
 | **Meal plan data** | 26 weeks in DB; Week 5 complete; Week 6 Mon–Thu only |
 | **Mobile (Expo)** | Scaffold only — not wired for guest/auth UX |
-| **Deploy (VPS)** | Prod Compose + nginx + systemd + Certbot runbook added; droplet bring-up in progress |
+| **Deploy (VPS)** | Dual-domain nginx: `diet.yayati-labs.com` (SPA) + `api.diet.yayati-labs.com` (API); `VITE_API_BASE_URL` at build |
 | **Tests** | None automated yet |
 
 ---
@@ -65,13 +65,15 @@ Living log of what has been built, what was done recently, and what is next. Upd
 ### Deploy — DigitalOcean droplet
 
 - SSH + repo clone on droplet already done by operator
-- Added production stack files (not wired into local `docker compose` default):
-  - `docker-compose.prod.yml` — Postgres + API; API bound to `127.0.0.1:3000` only; no backend source bind-mount; recipes volume persisted
-  - `.env.prod.example` → copy to `.env.prod` (gitignored) for secrets / `CORS_ORIGINS`
-  - `deploy/nginx/dailydiet.conf` — serves `apps/web/dist`, proxies `/v1`, `/static`, `/health` (and optional `/docs`)
+- Production stack:
+  - `docker-compose.prod.yml` — Postgres + API; API bound to `127.0.0.1:3000` only; recipes volume persisted
+  - `.env.prod.example` → `.env.prod` with `CORS_ORIGINS=https://diet.yayati-labs.com`
+  - `deploy/nginx/dailydiet.conf` — **two** server blocks: web SPA + API reverse proxy
   - `deploy/systemd/dailydiet.service` — start Compose on boot
-  - `deploy/README.md` — full droplet runbook (secrets → Compose → seed → web build → nginx → Certbot → systemd)
-- Web still built on host (`npm run build`); nginx is the public edge (80/443). Same-origin proxy so relative `/v1` fetches work.
+  - `deploy/README.md` — dual-domain runbook + cutover commands
+- Domains: `diet.yayati-labs.com` (web), `api.diet.yayati-labs.com` (API)
+- Web build uses `VITE_API_BASE_URL=https://api.diet.yayati-labs.com` (relative `/v1` no longer enough for split hosts)
+- `mediaUrl()` prefixes `/static/...` recipe images for the API host
 
 ### Bug fixes & dev ergonomics
 
@@ -81,7 +83,29 @@ Living log of what has been built, what was done recently, and what is next. Upd
 
 ---
 
-## Latest session — Droplet deploy scaffolding (2026-07-21)
+## Latest session — Dual-domain nginx (2026-08-16)
+
+**Goal:** Wire `diet.yayati-labs.com` (web) + `api.diet.yayati-labs.com` (API) for droplet deploy.
+
+**Done (repo):**
+
+1. `VITE_API_BASE_URL` + `mediaUrl()` in `apps/web/src/api.ts`; recipe image pages updated
+2. `deploy/nginx/dailydiet.conf` — dual `server` blocks (no `/v1` proxy on web host)
+3. `.env.prod.example` CORS → `https://diet.yayati-labs.com`
+4. `deploy/README.md` — DNS, build with API base, Certbot both names, cutover + validation
+
+**Still on droplet (operator):**
+
+- [ ] DNS A records for both hosts → droplet IP
+- [ ] `.env.prod` with `CORS_ORIGINS=https://diet.yayati-labs.com`; recreate API if CORS changed
+- [ ] `VITE_API_BASE_URL=https://api.diet.yayati-labs.com npm run build`
+- [ ] Install/update nginx from `deploy/nginx/dailydiet.conf` (set `root` path)
+- [ ] `certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com`
+- [ ] Validate: `curl` web + `/health` on api; browser Network → api host
+
+---
+
+## Prior session — Droplet deploy scaffolding (2026-07-21)
 
 **Goal:** Durable DigitalOcean droplet run (Compose API/DB + nginx SPA + HTTPS + boot persistence).
 
@@ -90,16 +114,6 @@ Living log of what has been built, what was done recently, and what is next. Upd
 1. Confirmed local stack remains: `docker compose up -d` (dev) + `apps/web` via Vite
 2. Added prod artifacts listed under **Deploy — DigitalOcean droplet** above
 3. Documented operator steps in `deploy/README.md` (domain A record required for Certbot)
-
-**Still on droplet (operator):**
-
-- [ ] `cp .env.prod.example .env.prod` and set real secrets / `CORS_ORIGINS`
-- [ ] `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build`
-- [ ] First-time seed via `POST /v1/admin/seed` with prod `ADMIN_API_KEY`
-- [ ] `cd apps/web && npm install && npm run build`
-- [ ] Install nginx site from `deploy/nginx/dailydiet.conf` (edit `server_name` + `root`)
-- [ ] Certbot HTTPS + ufw / DO firewall (22, 80, 443 only)
-- [ ] Enable `deploy/systemd/dailydiet.service` (edit `User` / paths)
 
 ---
 
@@ -136,14 +150,15 @@ Living log of what has been built, what was done recently, and what is next. Upd
 - **Web not in Docker:** Run `cd apps/web && npm run dev` separately (local); on droplet, build static and serve via nginx.
 - **Admin key (local):** `dev-admin-key` for `/v1/admin/*` and recipe admin UI.
 - **Prod vs local Compose:** Use `docker-compose.prod.yml` + `.env.prod` on the droplet; do not reuse local `JWT_SECRET` / `ADMIN_API_KEY` / DB password.
-- **Prod CORS:** Must match public origin (e.g. `https://your.domain.com`). Same-origin nginx makes relative `/v1` work; wrong `CORS_ORIGINS` still breaks if the browser origin differs.
+- **Prod CORS:** `https://diet.yayati-labs.com` (web origin). API is on a different host — CORS must allow the web origin.
+- **Prod web build:** Must set `VITE_API_BASE_URL=https://api.diet.yayati-labs.com` or the SPA calls the wrong host.
 - **Do not publish 3000/5432** on the droplet firewall — only 22, 80, 443.
 
 ---
 
 ## Next up (suggested)
 
-- [ ] Finish droplet checklist under **Latest session** (secrets → Compose → seed → web → nginx → Certbot → systemd)
+- [ ] Finish dual-domain droplet checklist under **Latest session**
 - [ ] Fill **Week 6 Fri–Sun** in Excel, then re-import + reseed
 - [ ] Add recipe catalog entries for new meal names (via `/recipes` or `recipe-catalog.json`)
 - [ ] Re-login and re-track meals if re-seed cleared personal data
@@ -176,14 +191,14 @@ docker compose up -d          # Postgres + API :3000
 cd apps/web && npm run dev    # Web :5173
 ```
 
-### Droplet (prod)
+### Droplet (prod, dual-domain)
 
 ```bash
 # Full runbook: deploy/README.md
 cd ~/DailyDiet
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
-cd apps/web && npm install && npm run build
-# then nginx + certbot + systemd per deploy/README.md
+cd apps/web && VITE_API_BASE_URL=https://api.diet.yayati-labs.com npm run build
+# nginx + certbot both names per deploy/README.md
 ```
 
 ---
@@ -213,6 +228,7 @@ Also update formal docs when behavior changes:
 
 | Date | Change |
 |------|--------|
+| 2026-08-16 | Dual-domain deploy: `diet.` + `api.diet.` nginx, `VITE_API_BASE_URL` / `mediaUrl`, CORS + deploy docs |
 | 2026-07-21 | Droplet deploy scaffolding: `docker-compose.prod.yml`, `.env.prod.example`, `deploy/` (nginx, systemd, README); WIP checklist for bring-up |
 | 2026-07-19 | Recipe list page: client-side name search bar (`/recipes`) |
 | 2026-07-11 | Created work log; captured v2.6 feature set + Week 5–6 Excel import session |

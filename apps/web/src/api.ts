@@ -141,6 +141,16 @@ export function clearTokens(): void {
   localStorage.removeItem("dailyDiet.refreshToken");
 }
 
+/** Build-time API origin for prod split (e.g. https://api.diet.yayati-labs.com). Empty in local Vite. */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
+/** Prefix relative media paths (/static/...) when VITE_API_BASE_URL is set. */
+export function mediaUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 let unauthorizedHandler: (() => void) | null = null;
 
 export function setUnauthorizedHandler(handler: (() => void) | null): void {
@@ -157,7 +167,8 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(path, { ...init, headers });
+  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const res = await fetch(url, { ...init, headers });
   if (!res.ok) {
     if (res.status === 401 && token) {
       unauthorizedHandler?.();
