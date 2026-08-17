@@ -1,0 +1,9 @@
+=== STEP 2: import ===
+import: ok
+=== STEP 3: verify JSON ===
+week-5 title: Week 5 starting: June 1, 2026
+week-5 friday meal1: 'Detox Kawa tea\n 3 soaked Almonds'
+week-6 title: Week 6 starting: June 8, 2026
+week-6 monday meal1: 'Detox Kawa tea\n 3 soaked Almonds'
+week-6 empty cells: 24
+ERROR: week-6 has empty cells

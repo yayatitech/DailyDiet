@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getAdminKey, setAdminKey } from "../adminKey";
-import { api, Ingredient, RecipeDetail } from "../api";
+import { api, Ingredient, mediaUrl, RecipeDetail } from "../api";
 import RecipePageShell from "./RecipePageShell";
 
 const emptyIngredient = (): Ingredient => ({ amount: "", item: "" });
@@ -40,7 +40,7 @@ export default function RecipeEditPage() {
         setIngredients(recipe.ingredients.length ? recipe.ingredients : [emptyIngredient()]);
         setInstructions(recipe.instructions);
         setExternalUrl(recipe.external_url ?? "");
-        setImageUrl(recipe.image_url);
+        setImageUrl(mediaUrl(recipe.image_url));
         setError("");
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));

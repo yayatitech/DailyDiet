@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getAdminKey } from "../adminKey";
-import { api, RecipeDetail } from "../api";
+import { api, mediaUrl, RecipeDetail } from "../api";
 import RecipePageShell from "./RecipePageShell";
 import RecipeInstructions from "../RecipeInstructions";
 
@@ -28,6 +28,7 @@ export default function RecipeViewPage() {
   }, [recipeId]);
 
   const title = recipe?.display_name || recipe?.name || "Recipe";
+  const imageSrc = mediaUrl(recipe?.image_url);
 
   return (
     <>
@@ -55,8 +56,8 @@ export default function RecipeViewPage() {
         {error && <p className="error">{error}</p>}
         {recipe && (
           <article className="recipe-view">
-            {recipe.image_url && (
-              <img className="recipe-hero-image" src={recipe.image_url} alt={title} />
+            {imageSrc && (
+              <img className="recipe-hero-image" src={imageSrc} alt={title} />
             )}
             {recipe.display_name && recipe.display_name !== recipe.name && (
               <p className="recipe-canonical-name">Meal name: {recipe.name}</p>

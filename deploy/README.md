@@ -1,14 +1,20 @@
 # Deploy DailyDiet on a DigitalOcean droplet
 
-Stack: **Docker Compose** (Postgres + API on `127.0.0.1:3000`) → **nginx** (SPA + reverse proxy) → **Certbot** (HTTPS).
+Stack: **Docker Compose** (Postgres + API on `127.0.0.1:3000`) → **nginx** (web + API hosts) → **Certbot** (HTTPS).
+
+| Host | Role |
+|------|------|
+| `https://diet.yayati-labs.com` | React SPA (`apps/web/dist`) |
+| `https://api.diet.yayati-labs.com` | FastAPI reverse proxy → `:3000` |
 
 ## Prerequisites
 
 - Ubuntu droplet, SSH access
 - Repo cloned (e.g. `~/DailyDiet`)
-- Domain DNS **A** record → droplet IP (needed for HTTPS)
-- Docker Engine + Compose plugin installed
-- Node.js available (nvm is fine) for `apps/web` build
+- DNS **A** records for both hostnames → droplet IP
+- Docker Engine + Compose plugin
+- Node.js (nvm is fine) for `apps/web` build
+- Firewall: **22**, **80**, **443** only (not 3000/5432)
 
 ## 1. Secrets
 
@@ -18,7 +24,7 @@ cp .env.prod.example .env.prod
 nano .env.prod   # set POSTGRES_PASSWORD, JWT_SECRET, ADMIN_API_KEY, CORS_ORIGINS
 ```
 
-`CORS_ORIGINS` must match the public URL, e.g. `https://your.domain.com`.
+`CORS_ORIGINS` must be the web origin: `https://diet.yayati-labs.com`.
 
 ## 2. Start API + DB
 
@@ -34,28 +40,30 @@ curl -X POST http://127.0.0.1:3000/v1/admin/seed \
   -H "X-Admin-Key: $(grep ADMIN_API_KEY .env.prod | cut -d= -f2)"
 ```
 
-## 3. Build web
+## 3. Build web (API base URL required)
+
+Prod split needs the API host baked in at build time:
 
 ```bash
 cd ~/DailyDiet/apps/web
 npm install
-npm run build
+VITE_API_BASE_URL=https://api.diet.yayati-labs.com npm run build
 # outputs apps/web/dist
 ```
+
+Leave `VITE_API_BASE_URL` unset for local `npm run dev` (Vite proxy).
 
 ## 4. nginx
 
 ```bash
 sudo apt install -y nginx
-# edit server_name + root path in the file, then:
 sudo cp ~/DailyDiet/deploy/nginx/dailydiet.conf /etc/nginx/sites-available/dailydiet
 sudo nano /etc/nginx/sites-available/dailydiet
+# set root to absolute path of apps/web/dist (replace YOUR_USER)
 sudo ln -sf /etc/nginx/sites-available/dailydiet /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 ```
-
-Open firewall ports if using ufw:
 
 ```bash
 sudo ufw allow OpenSSH
@@ -63,13 +71,13 @@ sudo ufw allow 'Nginx Full'
 sudo ufw enable
 ```
 
-DigitalOcean cloud firewall: allow **22**, **80**, **443** (not 3000/5432).
+DigitalOcean cloud firewall: allow **22**, **80**, **443**.
 
-## 5. HTTPS
+## 5. HTTPS (both names)
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d your.domain.com
+sudo certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com
 ```
 
 Certbot renews via timer automatically.
@@ -77,36 +85,59 @@ Certbot renews via timer automatically.
 ## 6. Start on boot (systemd)
 
 ```bash
-# edit User + WorkingDirectory paths first
 sudo cp ~/DailyDiet/deploy/systemd/dailydiet.service /etc/systemd/system/dailydiet.service
-sudo nano /etc/systemd/system/dailydiet.service
+sudo nano /etc/systemd/system/dailydiet.service   # edit User + WorkingDirectory
 sudo systemctl daemon-reload
 sudo systemctl enable --now dailydiet
 ```
+
+## Cutover / update on the droplet
+
+```bash
+cd ~/DailyDiet
+git pull
+
+# CORS / secrets if changed
+nano .env.prod   # CORS_ORIGINS=https://diet.yayati-labs.com
+
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+cd apps/web
+npm install
+VITE_API_BASE_URL=https://api.diet.yayati-labs.com npm run build
+
+sudo cp ~/DailyDiet/deploy/nginx/dailydiet.conf /etc/nginx/sites-available/dailydiet
+# re-apply YOUR_USER root path if the template overwrote it
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+First-time certs (if not done yet):
+
+```bash
+sudo certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com
+```
+
+## Validation
+
+```bash
+curl -I https://diet.yayati-labs.com/
+curl https://api.diet.yayati-labs.com/health
+```
+
+In the browser: open `https://diet.yayati-labs.com`, confirm Network tab calls go to `api.diet.yayati-labs.com`, login works, recipe images load (no CORS errors).
 
 ## Day-2 ops
 
 | Task | Command |
 |------|---------|
-| Update code | `git pull` → rebuild API → rebuild web → reload nginx |
 | Rebuild API | `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build` |
-| Rebuild web | `cd apps/web && npm install && npm run build` |
+| Rebuild web | `cd apps/web && VITE_API_BASE_URL=https://api.diet.yayati-labs.com npm run build` |
 | Logs | `docker compose -f docker-compose.prod.yml logs -f api` |
 | Status | `docker compose -f docker-compose.prod.yml ps` |
-
-Update flow:
-
-```bash
-cd ~/DailyDiet
-git pull
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
-cd apps/web && npm install && npm run build
-sudo systemctl reload nginx
-```
 
 ## Notes
 
 - Postgres is **not** published on the public interface.
 - API is only on `127.0.0.1:3000`; browsers hit nginx on 80/443.
-- Web uses relative `/v1` paths, so same-origin nginx routing is required.
+- Web calls absolute API URLs via `VITE_API_BASE_URL` (rebuild required after changing the API host).
 - Do not commit `.env.prod`.
