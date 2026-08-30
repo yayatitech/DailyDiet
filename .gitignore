@@ -15,3 +15,6 @@ apps/mobile/node_modules/
 .expo/
 simple_weekly_meal_plan_extendable.xlsm.bak
 backend/public/recipes/*.jpg
+dailydiet_ref_data.sql
+*_cloud_backup_*.sql
+*.sql.bak

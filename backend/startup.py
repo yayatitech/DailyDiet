@@ -1,6 +1,7 @@
 """Lightweight startup: create tables + migrate schema (no destructive seed)."""
 
 from app.database import Base, engine
+import app.models  # noqa: F401 — register ORM tables on Base.metadata
 from migrate_recipe_catalog import migrate
 
 

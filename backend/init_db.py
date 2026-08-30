@@ -1,6 +1,7 @@
 """Create tables and seed — run from backend/: python init_db.py"""
 
 from app.database import Base, engine
+import app.models  # noqa: F401 — register ORM tables on Base.metadata
 from migrate_recipe_catalog import migrate
 from seed import run_full_seed
 
