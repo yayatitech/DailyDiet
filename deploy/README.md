@@ -1,5 +1,9 @@
 # Deploy DailyDiet on a DigitalOcean droplet
 
+Full runbook (architecture, Cloudflare 521, nginx, Certbot, updates): **[docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)**.
+
+This page is a short command cheat sheet. Production path on the droplet is `/opt/apps/DailyDiet` (replace `~/DailyDiet` below if that is where you cloned).
+
 Stack: **Docker Compose** (Postgres + API on `127.0.0.1:3000`) → **nginx** (web + API hosts) → **Certbot** (HTTPS).
 
 | Host | Role |
