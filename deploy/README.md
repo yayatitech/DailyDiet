@@ -86,6 +86,8 @@ sudo certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com
 
 Certbot renews via timer automatically.
 
+If the public site shows Cloudflare **521**, run on the droplet: `bash scripts/diagnose_cf521.sh` (details in [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md) §8).
+
 ## 6. Start on boot (systemd)
 
 ```bash

@@ -16,6 +16,7 @@ Related files:
 - [`deploy/nginx/dailydiet.conf`](../deploy/nginx/dailydiet.conf) — HTTP vhosts
 - [`deploy/systemd/dailydiet.service`](../deploy/systemd/dailydiet.service) — start Compose on boot
 - [`deploy/README.md`](../deploy/README.md) — short command cheat sheet
+- [`scripts/diagnose_cf521.sh`](../scripts/diagnose_cf521.sh) — Cloudflare 521 origin diagnostics (run on droplet)
 
 ---
 
@@ -307,24 +308,56 @@ Expect `{"status":"ok"}` and HTML containing `id="root"` (not `Welcome to nginx`
 
 ## 8. HTTPS (Certbot + Cloudflare)
 
-Cloudflare **521 Web server is down** means CF reached the droplet IP and the origin **refused the connection**. Typical cause: SSL mode Full/strict while nginx listens on **:80 only** (`ss` shows no `:443`).
+Cloudflare **521 Web server is down** means CF reached the droplet IP and the origin **refused the connection**. Common causes (often both):
 
-1. Grey-cloud `diet` and `api.diet` in Cloudflare.
-2. Issue certificates:
+1. SSL mode **Full / Full (strict)** while nginx listens on **:80 only** (`ss` shows no `:443`).
+2. **`ufw` allows OpenSSH only** — ports 80/443 never opened (see §7 firewall).
+
+### Diagnose 521 (on the droplet)
 
 ```bash
+cd /opt/apps/DailyDiet
+# If the script was edited on Windows, strip CRLF first:
+#   sed -i 's/\r$//' scripts/diagnose_cf521.sh
+bash scripts/diagnose_cf521.sh
+sudo ufw status verbose
+```
+
+The script emits NDJSON for: nginx active + listeners, counts of `:80`/`:443`, ufw rules, `nginx -t` / `sites-enabled`, local `Host:` HTTP probe, and API `:3000/health`.
+
+| Finding | Meaning | Fix |
+|---------|---------|-----|
+| `nginx` not `active` / nothing on `:80` | Edge not running | `sudo systemctl start nginx` and re-check site config |
+| `count443`: **0** with CF Full/strict | Origin TLS missing → classic **521** | Certbot (§8 steps below), then `ss` shows `:443` |
+| ufw **OpenSSH only** (no 80/443 / Nginx Full) | Public traffic dropped | `sudo ufw allow 80/tcp && sudo ufw allow 443/tcp` (or `sudo ufw allow 'Nginx Full'`) |
+| Local Host curl **200** + SPA HTML, API `{"status":"ok"}` | App stack is fine; problem is CF↔origin path | Fix TLS and/or firewall, not `npm run build` |
+| Local Host curl **301** after Certbot | Expected HTTP→HTTPS redirect | Probe `https://127.0.0.1/` or rely on CF once `:443` + ufw are open |
+
+Also confirm DigitalOcean **cloud** firewall allows **22, 80, 443**.
+
+### Issue certificates
+
+1. Grey-cloud `diet` and `api.diet` in Cloudflare (easier while issuing).
+2. Open firewall if needed, then:
+
+```bash
+sudo ufw allow 'Nginx Full'    # 80 + 443 — required for CF and Certbot HTTP-01
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com
 sudo nginx -t && sudo systemctl reload nginx
-ss -tlnp | grep 443
+ss -tlnp | grep -E ':80|:443'
+bash scripts/diagnose_cf521.sh
 ```
+
+Expect `count443` &gt; 0 and ufw listing Nginx Full or 80/443.
 
 3. Cloudflare SSL/TLS → **Full (strict)**. Orange-cloud both records.
 4. Optional: Always Use HTTPS on.
+5. Browser: open `https://diet.yayati-labs.com/` — SPA should load (not 521/522).
 
 Certbot installs a systemd timer for renewal. Test: `sudo certbot renew --dry-run`.
 
-**Temporary only:** Flexible mode (CF → origin HTTP :80) can clear 521 before certificates exist. Switch to Full (strict) after Certbot.
+**Temporary only:** Flexible mode (CF → origin HTTP :80) can clear 521 before certificates exist — only after ufw allows **80**. Switch to Full (strict) after Certbot.
 
 **Alternative:** Cloudflare Origin CA certificate installed on nginx, keep Full (strict), skip Let's Encrypt. Not required if Certbot works.
 
@@ -400,8 +433,8 @@ Open `https://diet.yayati-labs.com`. Network tab: XHR/fetch must go to `https://
 | Local `:3000/health` fails | API container down |
 | Host-header nginx `/health` 404 | API vhost not enabled |
 | `dig` wrong / empty | DNS not pointed at droplet |
-| HTTPS timeout / **522** | CF cannot complete TCP to origin |
-| **521** | Origin refused (usually nothing on 443) |
+| HTTPS timeout / **522** | CF cannot complete TCP to origin (often firewall drop) |
+| **521** | Origin refused — usually nothing on **:443**, and/or **ufw** blocking 80/443; run `scripts/diagnose_cf521.sh` |
 | SSL error, Full strict | No valid origin cert |
 | UI loads, API calls wrong host | Rebuild with `VITE_API_BASE_URL` |
 
