@@ -16,6 +16,9 @@ Related files:
 - [`deploy/nginx/dailydiet.conf`](../deploy/nginx/dailydiet.conf) — HTTP vhosts
 - [`deploy/systemd/dailydiet.service`](../deploy/systemd/dailydiet.service) — start Compose on boot
 - [`deploy/README.md`](../deploy/README.md) — short command cheat sheet
+- [`scripts/diagnose_cf521.sh`](../scripts/diagnose_cf521.sh) — Cloudflare 521 origin diagnostics (run on droplet)
+
+See also **§12** for migrating weekly plan + recipe catalog (not users) from local to the droplet.
 
 ---
 
@@ -307,24 +310,56 @@ Expect `{"status":"ok"}` and HTML containing `id="root"` (not `Welcome to nginx`
 
 ## 8. HTTPS (Certbot + Cloudflare)
 
-Cloudflare **521 Web server is down** means CF reached the droplet IP and the origin **refused the connection**. Typical cause: SSL mode Full/strict while nginx listens on **:80 only** (`ss` shows no `:443`).
+Cloudflare **521 Web server is down** means CF reached the droplet IP and the origin **refused the connection**. Common causes (often both):
 
-1. Grey-cloud `diet` and `api.diet` in Cloudflare.
-2. Issue certificates:
+1. SSL mode **Full / Full (strict)** while nginx listens on **:80 only** (`ss` shows no `:443`).
+2. **`ufw` allows OpenSSH only** — ports 80/443 never opened (see §7 firewall).
+
+### Diagnose 521 (on the droplet)
 
 ```bash
+cd /opt/apps/DailyDiet
+# If the script was edited on Windows, strip CRLF first:
+#   sed -i 's/\r$//' scripts/diagnose_cf521.sh
+bash scripts/diagnose_cf521.sh
+sudo ufw status verbose
+```
+
+The script emits NDJSON for: nginx active + listeners, counts of `:80`/`:443`, ufw rules, `nginx -t` / `sites-enabled`, local `Host:` HTTP probe, and API `:3000/health`.
+
+| Finding | Meaning | Fix |
+|---------|---------|-----|
+| `nginx` not `active` / nothing on `:80` | Edge not running | `sudo systemctl start nginx` and re-check site config |
+| `count443`: **0** with CF Full/strict | Origin TLS missing → classic **521** | Certbot (§8 steps below), then `ss` shows `:443` |
+| ufw **OpenSSH only** (no 80/443 / Nginx Full) | Public traffic dropped | `sudo ufw allow 80/tcp && sudo ufw allow 443/tcp` (or `sudo ufw allow 'Nginx Full'`) |
+| Local Host curl **200** + SPA HTML, API `{"status":"ok"}` | App stack is fine; problem is CF↔origin path | Fix TLS and/or firewall, not `npm run build` |
+| Local Host curl **301** after Certbot | Expected HTTP→HTTPS redirect | Probe `https://127.0.0.1/` or rely on CF once `:443` + ufw are open |
+
+Also confirm DigitalOcean **cloud** firewall allows **22, 80, 443**.
+
+### Issue certificates
+
+1. Grey-cloud `diet` and `api.diet` in Cloudflare (easier while issuing).
+2. Open firewall if needed, then:
+
+```bash
+sudo ufw allow 'Nginx Full'    # 80 + 443 — required for CF and Certbot HTTP-01
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com
 sudo nginx -t && sudo systemctl reload nginx
-ss -tlnp | grep 443
+ss -tlnp | grep -E ':80|:443'
+bash scripts/diagnose_cf521.sh
 ```
+
+Expect `count443` &gt; 0 and ufw listing Nginx Full or 80/443.
 
 3. Cloudflare SSL/TLS → **Full (strict)**. Orange-cloud both records.
 4. Optional: Always Use HTTPS on.
+5. Browser: open `https://diet.yayati-labs.com/` — SPA should load (not 521/522).
 
 Certbot installs a systemd timer for renewal. Test: `sudo certbot renew --dry-run`.
 
-**Temporary only:** Flexible mode (CF → origin HTTP :80) can clear 521 before certificates exist. Switch to Full (strict) after Certbot.
+**Temporary only:** Flexible mode (CF → origin HTTP :80) can clear 521 before certificates exist — only after ufw allows **80**. Switch to Full (strict) after Certbot.
 
 **Alternative:** Cloudflare Origin CA certificate installed on nginx, keep Full (strict), skip Let's Encrypt. Not required if Certbot works.
 
@@ -400,8 +435,8 @@ Open `https://diet.yayati-labs.com`. Network tab: XHR/fetch must go to `https://
 | Local `:3000/health` fails | API container down |
 | Host-header nginx `/health` 404 | API vhost not enabled |
 | `dig` wrong / empty | DNS not pointed at droplet |
-| HTTPS timeout / **522** | CF cannot complete TCP to origin |
-| **521** | Origin refused (usually nothing on 443) |
+| HTTPS timeout / **522** | CF cannot complete TCP to origin (often firewall drop) |
+| **521** | Origin refused — usually nothing on **:443**, and/or **ufw** blocking 80/443; run `scripts/diagnose_cf521.sh` |
 | SSL error, Full strict | No valid origin cert |
 | UI loads, API calls wrong host | Rebuild with `VITE_API_BASE_URL` |
 
@@ -502,7 +537,160 @@ sudo systemctl restart dailydiet
 
 ---
 
-## 12. Day-2 operations
+## 12. Migrate weekly plan + recipe catalog (local → droplet)
+
+Use this when local Postgres has the plan/catalog you want on the cloud, and you do **not** want to copy users or personal data.
+
+| Include | Exclude |
+|---------|---------|
+| `time_slots`, `plan_templates`, `template_weeks`, `template_meals` | `users` |
+| `recipe_catalog` | `user_meal_overrides`, `user_week_notes`, `meal_completions` |
+| `public/recipes/` images (on disk) | Full DB dump / `/v1/export` user backup |
+
+Prod Postgres is not published on the host — dump/restore via `docker exec` on `dailydiet-db`.
+
+Dump files (`dailydiet_ref_data.sql`, `*_cloud_backup_*.sql`) are **gitignored** — do not commit them.
+
+**Warning:** Replacing template weeks (`TRUNCATE … CASCADE` or admin seed) **clears cloud personal meal data** that FKs to those weeks. User accounts remain; overrides/notes/completions on the droplet are wiped. Accept that before running.
+
+### 12.1 SSH / copy files
+
+`Permission denied (publickey)` on `scp`/`rsync` usually means the wrong key. Use the DigitalOcean identity (adjust path if yours differs):
+
+```bash
+export DROPLET=root@YOUR_DROPLET_IP
+export SSH_KEY=~/.ssh/id_digital_ocean   # key registered on the droplet
+
+ssh -i "$SSH_KEY" "$DROPLET"             # confirm login first
+```
+
+Copy helpers:
+
+```bash
+# scp with key
+scp -i "$SSH_KEY" FILE "$DROPLET:/tmp/"
+
+# or pipe over ssh (no scp)
+cat FILE | ssh -i "$SSH_KEY" "$DROPLET" 'cat > /tmp/FILE'
+
+# rsync with key
+rsync -av -e "ssh -i $SSH_KEY" SRC/ "$DROPLET:DEST/"
+```
+
+### 12.2 Dump reference tables (local)
+
+Local Compose stack must be running (`dailydiet-db`):
+
+```bash
+cd ~/projects/DailyDiet   # or your local clone path
+
+docker exec -t dailydiet-db pg_dump -U dailydiet -d dailydiet \
+  --data-only --column-inserts \
+  -t time_slots -t plan_templates -t template_weeks -t template_meals -t recipe_catalog \
+  > dailydiet_ref_data.sql
+
+scp -i "$SSH_KEY" dailydiet_ref_data.sql "$DROPLET:/tmp/"
+rsync -av -e "ssh -i $SSH_KEY" \
+  public/recipes/ "$DROPLET:/opt/apps/DailyDiet/public/recipes/"
+```
+
+### 12.3 Ensure schema exists (droplet)
+
+Before `TRUNCATE`, tables must exist. Empty DB symptom:
+
+```text
+ERROR:  relation "recipe_catalog" does not exist
+```
+
+API logs may also show `recipe_catalog table not found, skipping migration` while `\dt` lists **no relations** — that meant `startup.py` ran `create_all` without importing ORM models (fixed in current `startup.py`; rebuild API after `git pull` to pick it up).
+
+**Check:**
+
+```bash
+cd /opt/apps/DailyDiet
+docker exec -i dailydiet-db psql -U dailydiet -d dailydiet -c '\dt'
+```
+
+**If empty / missing `recipe_catalog`**, create tables inside the API container:
+
+```bash
+docker exec -i dailydiet-api python -c "
+from app.database import Base, engine
+import app.models
+Base.metadata.create_all(bind=engine)
+print('tables:', sorted(Base.metadata.tables))
+"
+docker exec -i dailydiet-db psql -U dailydiet -d dailydiet -c '\dt'
+```
+
+Or, with fixed code on the droplet:
+
+```bash
+git pull
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker exec -i dailydiet-db psql -U dailydiet -d dailydiet -c '\dt'
+```
+
+### 12.4 Truncate + restore (droplet)
+
+Only after `\dt` shows the reference tables:
+
+```bash
+cd /opt/apps/DailyDiet
+
+# optional safety backup of the whole cloud DB
+docker exec -t dailydiet-db pg_dump -U dailydiet -d dailydiet \
+  > /tmp/dailydiet_cloud_backup_$(date +%F).sql
+
+docker exec -i dailydiet-db psql -U dailydiet -d dailydiet <<'SQL'
+TRUNCATE recipe_catalog, template_meals, template_weeks, plan_templates, time_slots
+  RESTART IDENTITY CASCADE;
+SQL
+
+docker exec -i dailydiet-db psql -U dailydiet -d dailydiet < /tmp/dailydiet_ref_data.sql
+curl -sS http://127.0.0.1:3000/health
+```
+
+Do **not** run `/v1/admin/seed` after this restore (it reloads from JSON and can overwrite what you just imported).
+
+### 12.5 Alternate: JSON files + admin seed
+
+Use when `public/data/meal-plan.json` and `public/data/recipe-catalog.json` on disk are already the source of truth (not only edits sitting in local DB). Schema must still exist (§12.3).
+
+```bash
+# from local
+scp -i "$SSH_KEY" \
+  public/data/meal-plan.json public/data/recipe-catalog.json \
+  "$DROPLET:/opt/apps/DailyDiet/public/data/"
+rsync -av -e "ssh -i $SSH_KEY" \
+  public/recipes/ "$DROPLET:/opt/apps/DailyDiet/public/recipes/"
+
+# on droplet
+cd /opt/apps/DailyDiet
+KEY=$(grep '^ADMIN_API_KEY=' .env.prod | cut -d= -f2 | tr -d '\r')
+curl -sS -X POST http://127.0.0.1:3000/v1/admin/seed -H "X-Admin-Key: $KEY"
+```
+
+Seed reloads plan + catalog from JSON and **deletes** cloud overrides/notes/completions (same personal-data wipe as CASCADE truncate). It does not delete `users` rows.
+
+### 12.6 Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|--------|-----|
+| `scp: Permission denied (publickey)` | Wrong/missing SSH key | `-i ~/.ssh/id_digital_ocean` (or your DO key); test `ssh -i …` first |
+| `relation "recipe_catalog" does not exist` | Schema never created | §12.3 create tables, then retry truncate/restore |
+| `\dt` empty after API restart; log `recipe_catalog table not found` | Old `startup.py` without `import app.models` | Run create-tables one-liner or rebuild API with fixed `startup.py` |
+| Dump file shows up in `git status` | Should be ignored | Confirm `.gitignore` has `dailydiet_ref_data.sql` |
+
+### 12.7 Out of scope here
+
+- Full `pg_dump` of all tables (would copy users and personal rows)
+- `GET /v1/export` / `POST /v1/import` (per-user overrides/completions only; not the global catalog)
+- Publishing Postgres on the public internet
+
+---
+
+## 13. Day-2 operations
 
 | Task | Command |
 |------|---------|
@@ -518,7 +706,7 @@ sudo systemctl restart dailydiet
 
 ---
 
-## 13. Security checklist
+## 14. Security checklist
 
 - [ ] `.env.prod` not in git
 - [ ] API bound to `127.0.0.1:3000` only

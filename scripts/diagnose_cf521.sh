@@ -24,7 +24,7 @@ HAS443=$(ss -tlnp 2>/dev/null | grep -c ':443 ' || true)
 emit "H2" "ports_80_443" "{\"count80\":$HAS80,\"count443\":$HAS443}"
 
 # H3: firewall blocking
-UFW=$(sudo ufw status 2>/dev/null | head -5 | tr '\n' ';' | sed 's/"/\\"/g' || echo "ufw_unavailable")
+UFW=$(sudo ufw status 2>/dev/null | head -20 | tr '\n' ';' | sed 's/"/\\"/g' || echo "ufw_unavailable")
 emit "H3" "firewall" "{\"ufw\":\"$UFW\"}"
 
 # H4: nginx config / site enabled

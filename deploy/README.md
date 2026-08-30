@@ -1,6 +1,6 @@
 # Deploy DailyDiet on a DigitalOcean droplet
 
-Full runbook (architecture, Cloudflare 521, nginx, Certbot, updates): **[docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)**.
+Full runbook (architecture, Cloudflare 521, nginx, Certbot, updates, **migrate plan/catalog**): **[docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)** (§12 — SSH key, create schema, dump/restore; dumps are gitignored).
 
 This page is a short command cheat sheet. Production path on the droplet is `/opt/apps/DailyDiet` (replace `~/DailyDiet` below if that is where you cloned).
 
@@ -85,6 +85,8 @@ sudo certbot --nginx -d diet.yayati-labs.com -d api.diet.yayati-labs.com
 ```
 
 Certbot renews via timer automatically.
+
+If the public site shows Cloudflare **521**, run on the droplet: `bash scripts/diagnose_cf521.sh` (details in [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md) §8).
 
 ## 6. Start on boot (systemd)
 
