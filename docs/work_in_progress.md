@@ -10,8 +10,9 @@ Living log of what has been built, what was done recently, and what is next. Upd
 |--------------|---------|
 | [REQUIREMENTS.md](REQUIREMENTS.md) | Formal FR/NFR spec |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design, API, routes |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | DigitalOcean droplet deploy (architecture, nginx, HTTPS, updates) |
 | [../README.md](../README.md) | Quick start & dev commands |
-| [../deploy/README.md](../deploy/README.md) | DigitalOcean droplet deploy (Compose + nginx + HTTPS) |
+| [../deploy/README.md](../deploy/README.md) | Short droplet command cheat sheet |
 
 ---
 

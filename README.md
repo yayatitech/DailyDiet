@@ -6,6 +6,7 @@ Weekly meal tracker with **Python FastAPI** backend, **PostgreSQL**, **React** w
 |-----|---------|
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional & non-functional requirements (FR-01–37) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, API, auth, recipes, web routes |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | DigitalOcean droplet deploy (architecture, nginx, HTTPS, updates) |
 | [docs/work_in_progress.md](docs/work_in_progress.md) | Living log — what's done, latest session, next steps |
 
 ## Quick start
