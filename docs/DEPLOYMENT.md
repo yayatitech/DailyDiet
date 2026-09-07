@@ -18,7 +18,10 @@ Related files:
 - [`deploy/README.md`](../deploy/README.md) — short command cheat sheet
 - [`scripts/diagnose_cf521.sh`](../scripts/diagnose_cf521.sh) — Cloudflare 521 origin diagnostics (run on droplet)
 
-See also **§12** for migrating weekly plan + recipe catalog (not users) from local to the droplet.
+See also:
+
+- **[MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md)** — Excel → `meal-plan.json` → local seed → droplet (step-by-step curl)
+- **§12** below — migrating weekly plan + recipe catalog (not users) from local to the droplet
 
 ---
 
@@ -574,7 +577,9 @@ sudo systemctl restart dailydiet
 
 ## 12. Migrate weekly plan + recipe catalog (local → droplet)
 
-Use this when local Postgres has the plan/catalog you want on the cloud, and you do **not** want to copy users or personal data.
+**Excel-first path (JSON + curl seed):** see **[MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md)** — convert Excel → `meal-plan.json` locally, then scp + `/v1/admin/seed` on the droplet.
+
+Use the rest of this section when local **Postgres** already has the plan/catalog you want on the cloud, and you do **not** want to copy users or personal data (SQL dump path).
 
 | Include | Exclude |
 |---------|---------|
@@ -692,6 +697,8 @@ Do **not** run `/v1/admin/seed` after this restore (it reloads from JSON and can
 
 Use when `public/data/meal-plan.json` and `public/data/recipe-catalog.json` on disk are already the source of truth (not only edits sitting in local DB). Schema must still exist (§12.3).
 
+For the full Excel → JSON → local → droplet curl walkthrough (including when to skip `run_import`), see **[MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md)**.
+
 ```bash
 # from local
 scp -i "$SSH_KEY" \
@@ -703,6 +710,8 @@ rsync -av -e "ssh -i $SSH_KEY" \
 # on droplet
 cd /opt/apps/DailyDiet
 KEY=$(grep '^ADMIN_API_KEY=' .env.prod | cut -d= -f2 | tr -d '\r')
+# if API has its own copy of public/data:
+docker cp public/data/meal-plan.json dailydiet-api:/app/public/data/meal-plan.json
 curl -sS -X POST http://127.0.0.1:3000/v1/admin/seed -H "X-Admin-Key: $KEY"
 ```
 

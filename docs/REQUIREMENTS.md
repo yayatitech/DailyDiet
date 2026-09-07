@@ -115,6 +115,7 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | **FR-32** | **Recipe edit/create pages** at `/recipes/new` and `/recipes/:id/edit` (admin API key) | Must |
 | **FR-33** | **Hybrid meal link**: internal recipe page when content exists; else external URL in new tab | Must |
 | **FR-34** | Admin can **upload recipe images** to server storage (`public/recipes/`) | Must |
+| **FR-34a** | Preserve uploaded recipe image filenames (`basename` + content-type extension); fall back to `{id}{ext}` only when the name is missing/invalid; prevent path traversal and filename collisions between catalog entries | Must |
 | **FR-35** | **Edit mode** meal items use an editable recipe combobox; unmatched text offers **Create recipe** shortcut to `/recipes/new?name=…` | Must |
 
 ### 2.8 Authentication & guest mode
@@ -184,7 +185,7 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | FR-26 | `PATCH` meals/notes, reset/import | Edit mode (logged in): editable meals/notes | 1 |
 | FR-27–28 | `GET /v1/weeks`, completions | Today layout; progress when logged in | 1 |
 | FR-29 | `/v1/recipes`, `/v1/admin/recipes` | Recipe list page (`/recipes`) in Edit mode nav | 1 |
-| FR-30–34 | `/v1/recipes/:id`, `/v1/admin/recipes`, image upload | Recipe view/edit pages, hybrid meal links | 1 |
+| FR-30–34a | `/v1/recipes/:id`, `/v1/admin/recipes`, image upload | Recipe view/edit pages, hybrid meal links; stored names preserved | 1 |
 | FR-35 | `GET /v1/recipes` | `RecipeCombobox` in Edit mode meal rows | 1 |
 | FR-36–37 | `/v1/auth/*`, `/v1/me`, optional user on GET weeks | `/login`, guest read-only, header auth | 2 |
 
@@ -201,3 +202,4 @@ DailyDiet helps users follow a structured **weekly meal plan** with **8 meals pe
 | 2026-05-31 | 2.4 | Rich recipes, dedicated pages, hybrid links, image upload (FR-30–34) |
 | 2026-05-31 | 2.5 | Recipe combobox in Edit mode meal slots (FR-35) |
 | 2026-05-31 | 2.6 | Auth page, guest read-only mode (FR-36–37) |
+| 2026-08-30 | 2.6 | Preserve recipe image filenames on upload (FR-34a) |

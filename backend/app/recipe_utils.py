@@ -2,9 +2,48 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from pathlib import Path
 
 from app.models import RecipeCatalogEntry
+
+_UNSAFE_STEM_CHARS = re.compile(r"[^A-Za-z0-9_-]+")
+_MAX_IMAGE_STEM_LEN = 180
+
+
+def sanitize_recipe_image_filename(
+    uploaded_name: str | None,
+    ext: str,
+    recipe_id: int,
+) -> str:
+    """Safe basename for public/recipes/. Fallback is {recipe_id}{ext}."""
+    fallback = f"{recipe_id}{ext}"
+    if not uploaded_name or not uploaded_name.strip():
+        return fallback
+
+    raw = uploaded_name.replace("\\", "/").strip()
+    base = Path(raw).name
+    if not base or base in {".", ".."}:
+        return fallback
+
+    stem = Path(base).stem
+    stem = _UNSAFE_STEM_CHARS.sub("-", stem)
+    stem = re.sub(r"-{2,}", "-", stem).strip("-_.")
+    if not stem:
+        return fallback
+    stem = stem[:_MAX_IMAGE_STEM_LEN].rstrip("-_.")
+    if not stem:
+        return fallback
+
+    filename = f"{stem}{ext}"
+    if Path(filename).name != filename:
+        return fallback
+    return filename
+
+
+def recipe_stored_image_path(filename: str) -> str:
+    return f"recipes/{filename}"
 
 
 def recipe_image_url(image_path: str | None) -> str | None:

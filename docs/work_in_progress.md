@@ -1,6 +1,6 @@
 # DailyDiet — Work in Progress
 
-**Last updated:** 2026-08-16  
+**Last updated:** 2026-09-06  
 **Project:** DailyDiet v2 — `/home/pingmepls/projects/DailyDiet`  
 **Requirements version:** 2.6 (FR-01–37)
 
@@ -11,6 +11,7 @@ Living log of what has been built, what was done recently, and what is next. Upd
 | [REQUIREMENTS.md](REQUIREMENTS.md) | Formal FR/NFR spec |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design, API, routes |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | DigitalOcean droplet deploy (architecture, nginx, HTTPS, updates) |
+| [MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md) | Excel → meal-plan.json → local seed → droplet |
 | [../README.md](../README.md) | Quick start & dev commands |
 | [../deploy/README.md](../deploy/README.md) | Short droplet command cheat sheet |
 
@@ -173,18 +174,17 @@ Living log of what has been built, what was done recently, and what is next. Upd
 
 ### After Excel changes
 
+Full runbook: [MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md).
+
 ```bash
 cd /home/pingmepls/projects/DailyDiet
 python3 scripts/import_xlsm.py
-
-# If API runs in Docker:
 docker cp public/data/meal-plan.json dailydiet-api:/app/public/data/meal-plan.json
-docker exec dailydiet-api python init_db.py
-
-# Or local venv:
-cd backend && python3 init_db.py
+curl -X POST "http://localhost:3000/v1/admin/seed" \
+  -H "X-Admin-Key: dev-admin-key"
 ```
 
+Omit `?run_import=true` when JSON is already built. Seed is destructive.
 ### Dev servers
 
 ```bash
@@ -220,7 +220,8 @@ Also update formal docs when behavior changes:
 | New requirement / behavior | `docs/REQUIREMENTS.md` |
 | API, auth, routes, schema | `docs/ARCHITECTURE.md` |
 | Setup / quick start | `README.md` |
-| Droplet / production deploy | `deploy/README.md` (+ prod Compose / nginx / systemd) |
+| Excel / meal-plan load | `docs/MEAL_PLAN_IMPORT.md` |
+| Droplet / production deploy | `docs/DEPLOYMENT.md`, `deploy/README.md` |
 | Session progress / “where I left off” | **this file** |
 
 ---
@@ -229,6 +230,7 @@ Also update formal docs when behavior changes:
 
 | Date | Change |
 |------|--------|
+| 2026-09-06 | Added `docs/MEAL_PLAN_IMPORT.md` — Excel → JSON → local/droplet seed curl runbook |
 | 2026-08-16 | Dual-domain deploy: `diet.` + `api.diet.` nginx, `VITE_API_BASE_URL` / `mediaUrl`, CORS + deploy docs |
 | 2026-07-21 | Droplet deploy scaffolding: `docker-compose.prod.yml`, `.env.prod.example`, `deploy/` (nginx, systemd, README); WIP checklist for bring-up |
 | 2026-07-19 | Recipe list page: client-side name search bar (`/recipes`) |
