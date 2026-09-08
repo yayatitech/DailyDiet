@@ -11,7 +11,12 @@ from app.database import get_db
 from app.deps import require_admin
 from app.meals import normalize_meal_name
 from app.models import RecipeCatalogEntry
-from app.recipe_utils import recipe_has_internal_content, recipe_image_url
+from app.recipe_utils import (
+    recipe_has_internal_content,
+    recipe_image_url,
+    recipe_stored_image_path,
+    sanitize_recipe_image_filename,
+)
 from app.schemas import IngredientOut, RecipeCreate, RecipeOut, RecipeSummary, RecipeUpdate
 
 router = APIRouter(prefix="/v1", tags=["recipes"])
@@ -85,12 +90,27 @@ def apply_recipe_fields(entry: RecipeCatalogEntry, body: RecipeCreate | RecipeUp
     entry.updated_at = datetime.utcnow()
 
 
-def delete_recipe_image(entry: RecipeCatalogEntry) -> None:
-    if not entry.image_path:
+def _dest_under_recipes(filename: str) -> Path:
+    dest_dir = recipes_dir().resolve()
+    dest = (dest_dir / filename).resolve()
+    if dest.parent != dest_dir:
+        raise HTTPException(status_code=400, detail="Invalid image filename")
+    return dest
+
+
+def _unlink_recipe_image_path(image_path: str | None) -> None:
+    if not image_path:
         return
-    image_file = public_root() / entry.image_path
+    dest_dir = (public_root() / "recipes").resolve()
+    image_file = (public_root() / image_path).resolve()
+    if image_file.parent != dest_dir:
+        return
     if image_file.is_file():
         image_file.unlink(missing_ok=True)
+
+
+def delete_recipe_image(entry: RecipeCatalogEntry) -> None:
+    _unlink_recipe_image_path(entry.image_path)
 
 
 @router.get("/recipes", response_model=list[RecipeSummary])
@@ -164,7 +184,18 @@ def delete_recipe(
     entry = db.get(RecipeCatalogEntry, recipe_id)
     if not entry:
         raise HTTPException(status_code=404, detail="Recipe not found")
-    delete_recipe_image(entry)
+    shared = None
+    if entry.image_path:
+        shared = (
+            db.query(RecipeCatalogEntry)
+            .filter(
+                RecipeCatalogEntry.image_path == entry.image_path,
+                RecipeCatalogEntry.id != recipe_id,
+            )
+            .first()
+        )
+    if not shared:
+        delete_recipe_image(entry)
     db.delete(entry)
     db.commit()
     return {"ok": True}
@@ -190,13 +221,30 @@ async def upload_recipe_image(
     if len(data) > settings.max_recipe_image_bytes:
         raise HTTPException(status_code=400, detail="Image too large (max 5 MB)")
 
-    delete_recipe_image(entry)
-    filename = f"{recipe_id}{ext}"
-    dest = recipes_dir() / filename
-    dest.write_bytes(data)
+    filename = sanitize_recipe_image_filename(file.filename, ext, recipe_id)
+    dest = _dest_under_recipes(filename)
+    image_path = recipe_stored_image_path(filename)
 
-    entry.image_path = f"recipes/{filename}"
+    conflict = (
+        db.query(RecipeCatalogEntry)
+        .filter(
+            RecipeCatalogEntry.image_path == image_path,
+            RecipeCatalogEntry.id != recipe_id,
+        )
+        .first()
+    )
+    if conflict:
+        raise HTTPException(
+            status_code=409,
+            detail="Image filename already used by another recipe",
+        )
+
+    previous_path = entry.image_path
+    dest.write_bytes(data)
+    entry.image_path = image_path
     entry.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(entry)
+    if previous_path and previous_path != image_path:
+        _unlink_recipe_image_path(previous_path)
     return entry_to_out(entry)

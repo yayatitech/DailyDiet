@@ -88,6 +88,8 @@ Certbot renews via timer automatically.
 
 If the public site shows Cloudflare **521**, run on the droplet: `bash scripts/diagnose_cf521.sh` (details in [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md) §8).
 
+If the SPA loads but API calls fail with **`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`**, set Cloudflare DNS for **`api.diet` to DNS only (grey cloud)** — Universal SSL does not cover nested `api.diet.*` (§3 / §8 in the full runbook).
+
 ## 6. Start on boot (systemd)
 
 ```bash

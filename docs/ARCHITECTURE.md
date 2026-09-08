@@ -83,7 +83,10 @@ DailyDiet/
 │   └── recipes/                 # Uploaded recipe images (served at /static/recipes/)
 ├── docs/
 │   ├── REQUIREMENTS.md
-│   └── ARCHITECTURE.md
+│   ├── ARCHITECTURE.md
+│   ├── DEPLOYMENT.md
+│   ├── MEAL_PLAN_IMPORT.md      # Excel → JSON → seed → droplet
+│   └── work_in_progress.md
 ├── docker-compose.yml           # postgres + api (no web container)
 └── README.md
 ```
@@ -186,7 +189,7 @@ Lookup key: `normalize_meal_name(text)` — lowercase, trim, collapse whitespace
 | only `external_url` | External URL (new tab) |
 | neither | No icon |
 
-Admin manages recipes at `/recipes` (web) or `/v1/admin/recipes` (API + `X-Admin-Key`). Images uploaded to `public/recipes/` via `POST /v1/admin/recipes/{id}/image`, served at `/static/recipes/{id}.jpg`.
+Admin manages recipes at `/recipes` (web) or `/v1/admin/recipes` (API + `X-Admin-Key`). Images uploaded to `public/recipes/` via `POST /v1/admin/recipes/{id}/image` keep a sanitized uploaded filename (`image_path` = `recipes/{name}`); `{id}{ext}` is only a fallback. Clients receive `image_url` as `/static/{image_path}`. Legacy `recipes/{id}.ext` rows remain valid. Duplicate filenames across catalog entries return 409.
 
 ---
 
@@ -296,6 +299,7 @@ When adding features, update these files together:
 | New FR / behavior | `docs/REQUIREMENTS.md` — add FR row, traceability row, revision history |
 | API / auth / routes | `docs/ARCHITECTURE.md` — REST table, web routes, diagrams |
 | Dev setup / quick start | `README.md` |
+| Excel / meal-plan load / droplet seed | `docs/MEAL_PLAN_IMPORT.md` |
 | Session progress / where you left off | `docs/work_in_progress.md` |
 | Mobile-only | `apps/mobile/README.md` |
 

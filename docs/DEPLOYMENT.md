@@ -18,7 +18,10 @@ Related files:
 - [`deploy/README.md`](../deploy/README.md) — short command cheat sheet
 - [`scripts/diagnose_cf521.sh`](../scripts/diagnose_cf521.sh) — Cloudflare 521 origin diagnostics (run on droplet)
 
-See also **§12** for migrating weekly plan + recipe catalog (not users) from local to the droplet.
+See also:
+
+- **[MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md)** — Excel → `meal-plan.json` → local seed → droplet (step-by-step curl)
+- **§12** below — migrating weekly plan + recipe catalog (not users) from local to the droplet
 
 ---
 
@@ -129,12 +132,25 @@ Create **A** records to the droplet IPv4:
 
 | Name | Type | Content | Proxy |
 |------|------|---------|--------|
-| `diet` | A | droplet IPv4 | Proxied (orange) after TLS works |
-| `api.diet` | A | droplet IPv4 | Proxied (orange) after TLS works |
+| `diet` | A | droplet IPv4 | Proxied (orange) after TLS works — OK with Universal SSL |
+| `api.diet` | A | droplet IPv4 | **DNS only (grey)** recommended — see nested-subdomain note below |
 
-**SSL/TLS → Overview:** **Full (strict)** once origin has a valid certificate. Do not use Flexible long-term (HTTPS to Cloudflare, HTTP to origin).
+**Orange vs grey cloud**
 
-Grey-cloud (DNS only) both names **while issuing Let's Encrypt certificates**. HTTP-01 fails if the records are orange-clouded.
+| Icon | Mode | Meaning |
+|------|------|--------|
+| Orange | Proxied | Browser → Cloudflare (TLS at CF) → origin |
+| Grey | DNS only | Browser → droplet directly (TLS = Let's Encrypt on nginx) |
+
+**Nested subdomain + Universal SSL:** Cloudflare free Universal SSL covers `*.yayati-labs.com` (e.g. `diet.yayati-labs.com`) but **not** `api.diet.yayati-labs.com` (a name under `diet.…`). If `api.diet` is **orange**, the SPA can load while API calls fail with browser **`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`** / **Failed to fetch**.
+
+**Recommended:** keep `api.diet` **grey (DNS only)** so clients use the origin Certbot cert (which includes both names). Keep `diet` orange if you want CF in front of the SPA.
+
+**Alternatives if you need `api.diet` proxied:** Cloudflare Advanced Certificate (or similar) for `api.diet.yayati-labs.com` / `*.diet.yayati-labs.com`, **or** rename the API to a single-level host (e.g. `diet-api.yayati-labs.com`), update nginx + Certbot, and rebuild the web app with the new `VITE_API_BASE_URL`.
+
+**SSL/TLS → Overview:** **Full (strict)** once origin has a valid certificate (relevant when a name is orange). Do not use Flexible long-term.
+
+Grey-cloud both names **while issuing Let's Encrypt certificates**. HTTP-01 fails if the records are orange-clouded.
 
 ---
 
@@ -353,9 +369,30 @@ bash scripts/diagnose_cf521.sh
 
 Expect `count443` &gt; 0 and ufw listing Nginx Full or 80/443.
 
-3. Cloudflare SSL/TLS → **Full (strict)**. Orange-cloud both records.
-4. Optional: Always Use HTTPS on.
-5. Browser: open `https://diet.yayati-labs.com/` — SPA should load (not 521/522).
+3. Cloudflare SSL/TLS → **Full (strict)** (for any **orange** records).
+4. Proxy status: leave **`diet` orange** if desired; leave **`api.diet` grey (DNS only)** unless you have an Advanced Certificate covering that nested name (§3). Do **not** orange-cloud `api.diet` on Universal SSL alone.
+5. Optional: Always Use HTTPS on.
+6. Browser checks:
+   - `https://api.diet.yayati-labs.com/health` → `{"status":"ok"}` (no SSL error)
+   - `https://diet.yayati-labs.com/` → SPA loads; Network tab calls the API host successfully
+
+### SPA loads but API Failed to fetch / SSL cipher mismatch
+
+Symptom: UI at `diet.yayati-labs.com` works; console shows  
+`GET https://api.diet.yayati-labs.com/v1/... net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH`.
+
+1. Confirm origin cert includes both names: `sudo certbot certificates` (Domains should list `diet…` and `api.diet…`).
+2. In Cloudflare DNS, set **`api.diet` → DNS only (grey cloud)**.
+3. Hard-refresh the SPA; retest `/health` on the API host.
+
+Confirm origin TLS without Cloudflare:
+
+```bash
+curl -sS --resolve api.diet.yayati-labs.com:443:DROPLET_IPV4 \
+  https://api.diet.yayati-labs.com/health
+```
+
+If that works but the public proxied URL fails, the problem is Cloudflare cert coverage for the nested name—not empty weeks/recipes in the DB.
 
 Certbot installs a systemd timer for renewal. Test: `sudo certbot renew --dry-run`.
 
@@ -438,6 +475,7 @@ Open `https://diet.yayati-labs.com`. Network tab: XHR/fetch must go to `https://
 | HTTPS timeout / **522** | CF cannot complete TCP to origin (often firewall drop) |
 | **521** | Origin refused — usually nothing on **:443**, and/or **ufw** blocking 80/443; run `scripts/diagnose_cf521.sh` |
 | SSL error, Full strict | No valid origin cert |
+| SPA OK, API **`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`** / Failed to fetch | `api.diet` orange under Universal SSL (nested subdomain); grey-cloud `api.diet` or Advanced Certificate (§3 / §8) |
 | UI loads, API calls wrong host | Rebuild with `VITE_API_BASE_URL` |
 
 ---
@@ -539,7 +577,9 @@ sudo systemctl restart dailydiet
 
 ## 12. Migrate weekly plan + recipe catalog (local → droplet)
 
-Use this when local Postgres has the plan/catalog you want on the cloud, and you do **not** want to copy users or personal data.
+**Excel-first path (JSON + curl seed):** see **[MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md)** — convert Excel → `meal-plan.json` locally, then scp + `/v1/admin/seed` on the droplet.
+
+Use the rest of this section when local **Postgres** already has the plan/catalog you want on the cloud, and you do **not** want to copy users or personal data (SQL dump path).
 
 | Include | Exclude |
 |---------|---------|
@@ -657,6 +697,8 @@ Do **not** run `/v1/admin/seed` after this restore (it reloads from JSON and can
 
 Use when `public/data/meal-plan.json` and `public/data/recipe-catalog.json` on disk are already the source of truth (not only edits sitting in local DB). Schema must still exist (§12.3).
 
+For the full Excel → JSON → local → droplet curl walkthrough (including when to skip `run_import`), see **[MEAL_PLAN_IMPORT.md](MEAL_PLAN_IMPORT.md)**.
+
 ```bash
 # from local
 scp -i "$SSH_KEY" \
@@ -668,6 +710,8 @@ rsync -av -e "ssh -i $SSH_KEY" \
 # on droplet
 cd /opt/apps/DailyDiet
 KEY=$(grep '^ADMIN_API_KEY=' .env.prod | cut -d= -f2 | tr -d '\r')
+# if API has its own copy of public/data:
+docker cp public/data/meal-plan.json dailydiet-api:/app/public/data/meal-plan.json
 curl -sS -X POST http://127.0.0.1:3000/v1/admin/seed -H "X-Admin-Key: $KEY"
 ```
 
@@ -712,6 +756,7 @@ Seed reloads plan + catalog from JSON and **deletes** cloud overrides/notes/comp
 - [ ] API bound to `127.0.0.1:3000` only
 - [ ] Postgres not published on the host
 - [ ] ufw + DigitalOcean firewall: 22, 80, 443 only
-- [ ] Cloudflare Full (strict) after origin certs exist
+- [ ] Cloudflare Full (strict) after origin certs exist (for orange records)
+- [ ] `api.diet` DNS only (grey) unless Advanced Certificate covers nested subdomain
 - [ ] `ALLOW_ANONYMOUS_DEV_USER=false`
 - [ ] Distinct `JWT_SECRET` / `ADMIN_API_KEY` from development

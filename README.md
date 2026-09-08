@@ -7,6 +7,7 @@ Weekly meal tracker with **Python FastAPI** backend, **PostgreSQL**, **React** w
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional & non-functional requirements (FR-01–37) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, API, auth, recipes, web routes |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | DigitalOcean droplet deploy (architecture, nginx, HTTPS, updates) |
+| [docs/MEAL_PLAN_IMPORT.md](docs/MEAL_PLAN_IMPORT.md) | Excel → meal-plan.json → local seed → droplet |
 | [docs/work_in_progress.md](docs/work_in_progress.md) | Living log — what's done, latest session, next steps |
 
 ## Quick start
@@ -143,7 +144,7 @@ curl -X POST http://localhost:3000/v1/admin/recipes \
   -d '{"name":"Mint Chutney","ingredients":[{"amount":"1 cup","item":"mint"}],"instructions":"Blend."}'
 ```
 
-Images: upload on `/recipes/:id/edit` or `POST /v1/admin/recipes/{id}/image` → stored in `public/recipes/`.
+Images: upload on `/recipes/:id/edit` or `POST /v1/admin/recipes/{id}/image` → stored in `public/recipes/` under a sanitized uploaded filename (`image_url` is `/static/recipes/{name}`).
 
 ### Recipe screenshot loader (external)
 
@@ -160,12 +161,18 @@ recipe-loader-watch --extractor llm --poll
 
 ## Admin seed (after Excel change)
 
+Full runbook: **[docs/MEAL_PLAN_IMPORT.md](docs/MEAL_PLAN_IMPORT.md)** (Excel → JSON → local DB → droplet).
+
 ```bash
-python scripts/import_xlsm.py
-cd backend && python init_db.py
-# or: curl -X POST http://localhost:3000/v1/admin/seed?run_import=true -H "X-Admin-Key: dev-admin-key"
+python3 scripts/import_xlsm.py
+docker cp public/data/meal-plan.json dailydiet-api:/app/public/data/meal-plan.json
+curl -X POST "http://localhost:3000/v1/admin/seed" \
+  -H "X-Admin-Key: dev-admin-key"
 ```
 
+Use `?run_import=true` only if you want the API to re-run Excel → JSON for you. If `meal-plan.json` is already updated, omit it.
+
+Seed is **destructive** (wipes templates + personal overrides/completions + reloads recipe catalog).
 ## Project layout
 
 ```
@@ -174,7 +181,7 @@ apps/web/         React + Vite + React Router (npm run dev)
 apps/mobile/      Expo scaffold (Phase 3)
 public/data/      Seed JSON (meal plan + recipe catalog)
 public/recipes/   Uploaded recipe images
-docs/             REQUIREMENTS.md, ARCHITECTURE.md
+docs/             REQUIREMENTS, ARCHITECTURE, DEPLOYMENT, MEAL_PLAN_IMPORT, WIP
 scripts/          Excel import
 docker-compose.yml  postgres + api only
 ```
