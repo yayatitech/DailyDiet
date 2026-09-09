@@ -133,8 +133,6 @@ body {
 .slot-header { position: sticky; left: 0; z-index: 2; min-width: 7rem; background: #f0f4ef; font-weight: 600; white-space: nowrap; }
 .slot-time { display: block; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
 .col-today { background: var(--today); }
-.meal-cell .cell-label { display: flex; gap: 0.35rem; align-items: flex-start; }
-.track-cb { margin-top: 0.35rem; flex-shrink: 0; accent-color: var(--accent); }
 .meal-input { width: 100%; min-width: 6rem; border: 1px solid transparent; border-radius: 4px; padding: 0.25rem; font: inherit; resize: vertical; background: transparent; }
 .meal-input:focus { outline: 2px solid var(--accent); border-color: var(--accent); background: #fff; }
 .meal-items { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
@@ -220,7 +218,6 @@ body {
 }
 .meal-item-add { align-self: flex-start; margin-top: 0.15rem; font-size: 0.75rem; }
 .meal-item-remove { min-width: 1.75rem; min-height: 1.75rem; }
-.meal-cell.cell-done, .day-slot.cell-done { background: var(--done); }
 .notes-section { margin-top: 1.25rem; }
 .notes-section label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem; }
 .week-notes { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem; font: inherit; background: var(--surface); }
@@ -240,7 +237,6 @@ body {
 .main-edit-mode .day-view { outline: 1px dashed var(--accent); outline-offset: 4px; border-radius: var(--radius); }
 .today-heading { margin-bottom: 0.25rem; }
 .today-meta { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--muted); }
-.today-progress { margin: 0 0 0.75rem; font-size: 0.95rem; font-weight: 600; color: var(--accent); }
 .today-warning { margin: 0 0 0.75rem; padding: 0.5rem 0.75rem; background: var(--today); border-radius: var(--radius); font-size: 0.9rem; }
 .recipe-catalog-panel {
   margin-top: 1.5rem;
