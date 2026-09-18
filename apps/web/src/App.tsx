@@ -11,6 +11,7 @@ import {
   RecipeSummary,
   TimeSlot,
   todayDayKey,
+  todayLocation,
   weekForToday,
   WeekDetail,
   WeekSummary,
@@ -151,10 +152,11 @@ export default function App() {
 
   const selectTodayLayout = () => {
     setLayoutMode("today");
-    if (week) {
-      const today = todayDayKey(week);
-      if (today) setDay(today);
-    }
+    const location = todayLocation(weeks);
+    if (!location) return;
+
+    setDay(location.day);
+    if (location.week.id !== weekId) void onWeekChange(location.week.id);
   };
 
   const debouncedMeal = (d: DayKey, slot: number, items: MealItem[]) => {

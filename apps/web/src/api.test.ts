@@ -5,6 +5,7 @@ import {
   completionSet,
   dayKeyForWeekOnDate,
   todayDayKey,
+  todayLocation,
   weekForToday,
   type DayKey,
   type WeekDetail,
@@ -106,6 +107,25 @@ describe("weekForToday", () => {
   it("returns null for an empty week list", () => {
     vi.setSystemTime(new Date("2025-01-15T12:00:00"));
     expect(weekForToday([])).toBeNull();
+  });
+});
+
+describe("todayLocation", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("locates today's week and day", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-15T12:00:00"));
+
+    expect(todayLocation([
+      { id: "week-1", title: "Week 1", start_date: "2025-01-06" },
+      { id: "week-2", title: "Week 2", start_date: "2025-01-13" },
+    ])).toEqual({
+      week: { id: "week-2", title: "Week 2", start_date: "2025-01-13" },
+      day: "wednesday",
+    });
   });
 });
 

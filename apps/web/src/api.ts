@@ -72,6 +72,13 @@ export function weekForToday(weeks: WeekSummary[]): WeekSummary | null {
   return weeks[0] ?? null;
 }
 
+export function todayLocation(weeks: WeekSummary[]): { week: WeekSummary; day: DayKey } | null {
+  const week = weekForToday(weeks);
+  if (!week) return null;
+  const day = todayDayKey(week);
+  return day ? { week, day } : null;
+}
+
 export function formatTodayHeading(day: DayKey | null): string {
   const d = new Date();
   const dateStr = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
