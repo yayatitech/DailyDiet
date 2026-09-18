@@ -3,8 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./auth";
 import {
   api,
-  cellId,
-  completionSet,
   DAY_KEYS,
   DAY_LABELS,
   DayKey,
@@ -13,12 +11,13 @@ import {
   RecipeSummary,
   TimeSlot,
   todayDayKey,
+  todayLocation,
   weekForToday,
   WeekDetail,
   WeekSummary,
 } from "./api";
 import AppHeader from "./components/AppHeader";
-import DayMealsView, { todayProgress } from "./DayMealsView";
+import DayMealsView from "./DayMealsView";
 import MealSlotEditor, { itemsToContent } from "./MealSlotEditor";
 import MealSlotViewer from "./MealSlotViewer";
 
@@ -36,33 +35,19 @@ function saveInteractionMode(mode: InteractionMode): void {
   localStorage.setItem(INTERACTION_MODE_KEY, mode);
 }
 
-function MealSlotCell({
+export function MealSlotCell({
   items,
-  checked,
   isView,
-  showTracking,
   recipes,
-  onToggle,
   onChange,
 }: {
   items: MealItem[];
-  checked: boolean;
   isView: boolean;
-  showTracking: boolean;
   recipes: RecipeSummary[];
-  onToggle: (checked: boolean) => void;
   onChange: (items: MealItem[]) => void;
 }) {
   if (isView) {
-    if (!showTracking) {
-      return <MealSlotViewer items={items} />;
-    }
-    return (
-      <label className="cell-label">
-        <input type="checkbox" className="track-cb" checked={checked} onChange={(e) => onToggle(e.target.checked)} />
-        <MealSlotViewer items={items} />
-      </label>
-    );
+    return <MealSlotViewer items={items} />;
   }
   return <MealSlotEditor items={items} recipes={recipes} onChange={onChange} />;
 }
@@ -73,7 +58,6 @@ export default function App() {
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [weekId, setWeekId] = useState("");
   const [week, setWeek] = useState<WeekDetail | null>(null);
-  const [done, setDone] = useState<Set<string>>(new Set());
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("today");
   const [interactionMode, setInteractionMode] = useState<InteractionMode>(loadInteractionMode);
   const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
@@ -100,9 +84,8 @@ export default function App() {
   }, []);
 
   const loadWeek = useCallback(async (id: string) => {
-    const [w, c] = await Promise.all([api.week(id), api.completions(id)]);
+    const w = await api.week(id);
     setWeek(w);
-    setDone(completionSet(id, c));
     const today = todayDayKey(w);
     if (today) setDay(today);
     return w;
@@ -169,10 +152,11 @@ export default function App() {
 
   const selectTodayLayout = () => {
     setLayoutMode("today");
-    if (week) {
-      const today = todayDayKey(week);
-      if (today) setDay(today);
-    }
+    const location = todayLocation(weeks);
+    if (!location) return;
+
+    setDay(location.day);
+    if (location.week.id !== weekId) void onWeekChange(location.week.id);
   };
 
   const debouncedMeal = (d: DayKey, slot: number, items: MealItem[]) => {
@@ -198,20 +182,6 @@ export default function App() {
     saveTimer.current = setTimeout(() => {
       api.patchNotes(weekId, notes).catch((e) => setError(String(e)));
     }, 300);
-  };
-
-  const toggleDone = async (d: DayKey, slot: number, checked: boolean) => {
-    if (!canEdit) return;
-    const id = cellId(weekId, d, slot);
-    const next = new Set(done);
-    if (checked) next.add(id);
-    else next.delete(id);
-    setDone(next);
-    try {
-      await api.toggleCompletion(weekId, d, slot, checked);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
   };
 
   const today = week ? todayDayKey(week) : null;
@@ -261,7 +231,6 @@ export default function App() {
           {canEdit && !isView && (
             <>
               <button type="button" className="btn secondary" onClick={async () => { await api.resetWeek(weekId); await loadWeek(weekId); }}>Reset week</button>
-              <button type="button" className="btn secondary" onClick={async () => { await api.clearCompletions(); setDone(new Set()); }}>Reset tracking</button>
               <Link to="/recipes" className="btn secondary">Recipes</Link>
             </>
           )}
@@ -294,7 +263,7 @@ export default function App() {
 
       {!isLoggedIn && (
         <p className="guest-banner">
-          Browsing template plan — <Link to="/login">Sign in</Link> to save meals and tracking.
+          Browsing template plan — <Link to="/login">Sign in</Link> to edit and save meals.
         </p>
       )}
 
@@ -304,14 +273,14 @@ export default function App() {
         <main className="planner-state" aria-busy="true">
           <div className="state-panel">
             <h2>Loading meal plan</h2>
-            <p>Fetching weeks, time slots, and tracking.</p>
+            <p>Fetching weeks, time slots, and meals.</p>
           </div>
         </main>
       ) : !week && !error ? (
         <main className="planner-state">
           <div className="state-panel">
             <h2>No meal plan weeks found</h2>
-            <p>Seed the default plan or import meal data to start tracking.</p>
+            <p>Seed the default plan or import meal data to start editing meals.</p>
           </div>
         </main>
       ) : week ? (
@@ -322,8 +291,6 @@ export default function App() {
               <p className="today-meta">{week.title}</p>
               {todayOutsideWeek ? (
                 <p className="today-warning">Today is not in this week&apos;s date range. Select another week or use Day view.</p>
-              ) : isLoggedIn ? (
-                <p className="today-progress">{todayProgress(done, weekId, activeDay, cellId)}/8 meals done</p>
               ) : null}
             </>
           ) : (
@@ -348,23 +315,16 @@ export default function App() {
                         {slots[slot]?.label ?? `Meal ${slot + 1}`}
                         <span className="slot-time">{slots[slot]?.time ?? ""}</span>
                       </th>
-                      {DAY_KEYS.map((d) => {
-                        const cid = cellId(weekId, d, slot);
-                        const checked = done.has(cid);
-                        return (
-                          <td key={d} className={`meal-cell${today === d ? " col-today" : ""}${checked ? " cell-done" : ""}`}>
-                            <MealSlotCell
-                              items={week.meals[d][slot] ?? []}
-                              checked={checked}
-                              isView={isView}
-                              showTracking={isLoggedIn}
-                              recipes={recipes}
-                              onToggle={(c) => toggleDone(d, slot, c)}
-                              onChange={(items) => debouncedMeal(d, slot, items)}
-                            />
-                          </td>
-                        );
-                      })}
+                      {DAY_KEYS.map((d) => (
+                        <td key={d} className={`meal-cell${today === d ? " col-today" : ""}`}>
+                          <MealSlotCell
+                            items={week.meals[d][slot] ?? []}
+                            isView={isView}
+                            recipes={recipes}
+                            onChange={(items) => debouncedMeal(d, slot, items)}
+                          />
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
@@ -375,13 +335,8 @@ export default function App() {
               day={activeDay}
               weekMeals={week.meals[activeDay] ?? []}
               slots={slots}
-              weekId={weekId}
-              done={done}
               isView={isView}
-              showTracking={isLoggedIn}
               recipes={recipes}
-              cellId={cellId}
-              onToggle={(slot, c) => toggleDone(activeDay, slot, c)}
               onChange={(slot, items) => debouncedMeal(activeDay, slot, items)}
             />
           )}
